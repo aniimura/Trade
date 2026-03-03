@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EDA: Exploratory Data Analysis</title>
+<style>
+:root {
+  --bg: #0d1117; --card: #161b22; --border: #30363d;
+  --text: #c9d1d9; --text-dim: #8b949e;
+  --accent: #58a6ff; --green: #3fb950; --red: #f85149;
+  --orange: #d29922; --purple: #bc8cff; --pink: #f778ba;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',-apple-system,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; padding:0; }
+.header { background:linear-gradient(135deg,#1a1e2e 0%,#0d1117 100%); border-bottom:1px solid var(--border); padding:36px 0 24px; text-align:center; }
+.header h1 { font-size:2rem; font-weight:700; background:linear-gradient(90deg,var(--accent),var(--purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:6px; }
+.header .subtitle { color:var(--text-dim); font-size:0.95rem; }
+.header .meta { margin-top:12px; display:flex; justify-content:center; gap:24px; font-size:0.85rem; color:var(--text-dim); flex-wrap:wrap; }
+.header .meta .badge { background:rgba(88,166,255,0.15); color:var(--accent); padding:2px 10px; border-radius:12px; font-size:0.8rem; }
+.container { max-width:1280px; margin:0 auto; padding:0 24px; }
+.nav-bar { background:var(--card); border-bottom:1px solid var(--border); padding:10px 0; position:sticky; top:0; z-index:100; }
+.nav-bar .container { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.nav-link { color:var(--text-dim); text-decoration:none; padding:6px 14px; border-radius:6px; font-size:0.85rem; transition:all 0.2s; }
+.nav-link:hover { background:rgba(88,166,255,0.1); color:var(--accent); }
+.nav-link.active { background:rgba(88,166,255,0.15); color:var(--accent); font-weight:600; }
+.section { margin:36px 0; padding-top:12px; }
+.section h2 { font-size:1.4rem; font-weight:700; color:#e6edf3; padding-bottom:10px; border-bottom:2px solid var(--accent); margin-bottom:20px; }
+.section h3 { font-size:1.1rem; color:var(--purple); margin:24px 0 10px; }
+.card { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:20px; margin:14px 0; }
+.card.highlight { border-left:4px solid var(--accent); }
+.card.success { border-left:4px solid var(--green); }
+.card.warn { border-left:4px solid var(--orange); }
+.card.danger { border-left:4px solid var(--red); }
+table { width:100%; border-collapse:collapse; margin:12px 0; font-size:0.85rem; }
+th, td { padding:8px 12px; text-align:left; border-bottom:1px solid var(--border); }
+th { background:rgba(88,166,255,0.08); color:var(--accent); font-weight:600; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px; }
+tr:hover { background:rgba(255,255,255,0.02); }
+.val-pos { color:var(--green); font-weight:600; }
+.val-neg { color:var(--red); font-weight:600; }
+.val-neutral { color:var(--orange); font-weight:600; }
+.kpi-row { display:flex; gap:14px; flex-wrap:wrap; margin:14px 0; }
+.kpi { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:16px; flex:1; min-width:140px; text-align:center; }
+.kpi .value { font-size:1.6rem; font-weight:800; color:var(--accent); }
+.kpi .label { color:var(--text-dim); font-size:0.8rem; margin-top:2px; }
+.chart-container { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:14px; margin:16px 0; text-align:center; }
+.chart-container img { max-width:100%; height:auto; border-radius:4px; }
+.chart-caption { color:var(--text-dim); font-size:0.8rem; margin-top:6px; font-style:italic; }
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media (max-width:768px) { .grid-2 { grid-template-columns:1fr; } }
+.insight { background:rgba(88,166,255,0.06); border-left:3px solid var(--accent); padding:14px 18px; margin:14px 0; border-radius:0 6px 6px 0; font-size:0.9rem; }
+.insight strong { color:var(--accent); }
+.tag { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:600; margin:1px; }
+.tag-forex { background:rgba(31,119,180,0.2); color:#5dabf5; }
+.tag-metals { background:rgba(255,127,14,0.2); color:#ffb347; }
+.tag-indices { background:rgba(44,160,44,0.2); color:#6dd66d; }
+.tag-energy { background:rgba(214,39,40,0.2); color:#f87171; }
+.tag-crypto { background:rgba(148,103,189,0.2); color:#c4a3ff; }
+.tag-etfs { background:rgba(140,86,75,0.2); color:#c49a8e; }
+.tag-stocks { background:rgba(227,119,194,0.2); color:#f5a0d8; }
+.footer { text-align:center; padding:36px 0; color:var(--text-dim); font-size:0.8rem; border-top:1px solid var(--border); margin-top:48px; }
+p { margin:6px 0; } ul,ol { margin:6px 0 6px 24px; } li { margin:3px 0; } a { color:var(--accent); }
+.repro-box { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:20px; margin:14px 0; }
+.repro-box h4 { color:var(--accent); margin-bottom:10px; }
+.repro-code { background:#0d1117; border:1px solid var(--border); border-radius:6px; padding:14px; margin:8px 0; font-family:'Cascadia Code','Fira Code',monospace; font-size:0.82rem; overflow-x:auto; white-space:pre; color:#e6edf3; line-height:1.5; }
+.repro-step { counter-increment:repro; padding-left:36px; position:relative; margin:12px 0; }
+.repro-step::before { content:counter(repro); position:absolute; left:0; top:0; background:var(--accent); color:#0d1117; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700; }
+.repro-steps { counter-reset:repro; }
+</style>
+</head>
+<body>
+<div class="nav-bar"><div class="container"><a href="index.html" class="nav-link">Overview</a> <a href="phase_eda.html" class="nav-link active">EDA</a> <a href="phase_v1.html" class="nav-link">v1 Per-Symbol RF</a> <a href="phase_v2.html" class="nav-link">v2 Multi-Method</a> <a href="phase_v3.html" class="nav-link">v3 Baseline</a> <a href="phase1.html" class="nav-link">Phase 1</a> <a href="phase2.html" class="nav-link">Phase 2</a> <a href="phase3.html" class="nav-link">Phase 3</a> <a href="report.html" class="nav-link">Full Report</a></div></div>
+<div class="header">
+  <div class="container">
+    <h1>EDA: Exploratory Data Analysis</h1>
+    <p class="subtitle">55 Symbols x 7 Asset Classes | Market Microstructure Analysis</p>
+    <div class="meta">
+      <span>Train: <span class="badge">~2025-09-01</span></span>
+      <span>Val: <span class="badge">2025-09-02 ~ 2025-12-01</span></span>
+      <span>Test: <span class="badge">2025-12-02 ~ 2026-03-02</span></span>
+      <span>MT5 IS: <span class="badge">2025-06-02 ~ 2025-09-02</span></span>
+      <span>MT5 Test: <span class="badge">2025-12-02 ~ 2026-03-01</span></span>
+    </div>
+  </div>
+</div>
+<div class="container">
+<div class="section"><h2>Overview</h2>
+<div class="card highlight">
+<p><strong>EDA (Exploratory Data Analysis)</strong>: 55銘柄 x 7アセットクラスの市場データ分析。</p>
+<p>ボラティリティ、リターン分布、トレンド特性、自己相関、セッション分析、リードラグ関係等を調査。</p>
+<p>PatternDetectV2.ex5 (v1モデル) による初回MT5バックテストを10銘柄で実施。</p>
+</div></div>
+<div class="section"><h2>Backtest Strategy Summary</h2>
+<p>v1モデルの出力を5種のトレード戦略(A-E)でシミュレーション:</p>
+<table><tr><th>Strategy</th><th>Period</th><th>Trades</th><th>Return%</th><th>Sharpe</th><th>MaxDD%</th><th>WinRate%</th></tr>
+<tr><td><strong>A</strong></td><td>train</td><td>137</td><td class="val-pos">11.18</td><td class="val-pos">2.28</td><td class="val-neg">-5.21</td><td>46.7</td></tr>
+<tr><td><strong>A</strong></td><td>val</td><td>23</td><td class="val-neg">-1.66</td><td class="val-neg">-2.22</td><td class="val-neg">-2.05</td><td>30.4</td></tr>
+<tr><td><strong>A</strong></td><td>test</td><td>20</td><td class="val-pos">0.73</td><td class="val-pos">1.30</td><td class="val-neg">-1.88</td><td>45.0</td></tr>
+<tr><td><strong>B</strong></td><td>train</td><td>611</td><td class="val-pos">195.43</td><td class="val-pos">2.22</td><td class="val-neg">-37.57</td><td>41.4</td></tr>
+<tr><td><strong>B</strong></td><td>val</td><td>90</td><td class="val-pos">9.90</td><td class="val-pos">0.74</td><td class="val-neg">-15.93</td><td>37.8</td></tr>
+<tr><td><strong>B</strong></td><td>test</td><td>80</td><td class="val-neg">-4.56</td><td class="val-neg">-0.45</td><td class="val-neg">-19.61</td><td>36.2</td></tr>
+<tr><td><strong>C</strong></td><td>train</td><td>9</td><td class="val-neg">-6.25</td><td class="val-neg">-6.51</td><td class="val-neg">-8.15</td><td>44.4</td></tr>
+<tr><td><strong>C</strong></td><td>val</td><td>0</td><td class="val-neutral">0.00</td><td class="val-neutral">0.00</td><td class="val-neutral">0.00</td><td>0.0</td></tr>
+<tr><td><strong>C</strong></td><td>test</td><td>0</td><td class="val-neutral">0.00</td><td class="val-neutral">0.00</td><td class="val-neutral">0.00</td><td>0.0</td></tr>
+<tr><td><strong>D</strong></td><td>train</td><td>1462</td><td class="val-neg">-82.04</td><td class="val-neg">-1.82</td><td class="val-neg">-87.45</td><td>41.5</td></tr>
+<tr><td><strong>D</strong></td><td>val</td><td>45</td><td class="val-pos">4.65</td><td class="val-pos">1.90</td><td class="val-neg">-1.95</td><td>40.0</td></tr>
+<tr><td><strong>D</strong></td><td>test</td><td>46</td><td class="val-neg">-2.52</td><td class="val-neg">-1.22</td><td class="val-neg">-4.26</td><td>30.4</td></tr>
+<tr><td><strong>E</strong></td><td>train</td><td>1115</td><td class="val-pos">15.50</td><td class="val-pos">0.67</td><td class="val-neg">-10.91</td><td>50.6</td></tr>
+<tr><td><strong>E</strong></td><td>val</td><td>58</td><td class="val-pos">1.57</td><td class="val-pos">1.38</td><td class="val-neg">-3.94</td><td>53.4</td></tr>
+<tr><td><strong>E</strong></td><td>test</td><td>56</td><td class="val-neg">-2.50</td><td class="val-neg">-2.40</td><td class="val-neg">-4.08</td><td>41.1</td></tr>
+</table></div>
+<div class="section"><h2>MT5 Backtest: Insample (2025-06 ~ 2025-09)</h2>
+<table><tr><th>Symbol</th><th>Category</th><th>Model</th><th>Net Profit</th><th>Sharpe</th><th>PF</th><th>Trades</th><th>WR%</th><th>MaxDD%</th></tr>
+<tr><td><strong>QQQ.O</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td>v3-RF</td><td class="val-pos">0.25</td><td class="val-pos">7.66</td><td class="val-pos">1.81</td><td>25</td><td>52.0</td><td>0.00</td></tr>
+<tr><td><strong>META.O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>v3-RF</td><td class="val-pos">1.31</td><td class="val-pos">15.01</td><td class="val-pos">2.56</td><td>28</td><td>57.1</td><td>0.00</td></tr>
+<tr><td><strong>BABA.N</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>v3-RF</td><td class="val-pos">0.28</td><td class="val-pos">16.27</td><td class="val-pos">1.97</td><td>53</td><td>47.2</td><td>0.00</td></tr>
+<tr><td><strong>NVDA.O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>v3-RF</td><td class="val-pos">0.37</td><td class="val-pos">18.56</td><td class="val-pos">2.68</td><td>28</td><td>60.7</td><td>0.00</td></tr>
+<tr><td><strong>SOLANA</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td>v3-RF</td><td class="val-neg">-0.22</td><td class="val-neg">-4.05</td><td class="val-neg">0.82</td><td>90</td><td>30.0</td><td>0.01</td></tr>
+<tr><td><strong>GOOGL.O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>v3-RF</td><td class="val-pos">0.60</td><td class="val-pos">28.67</td><td class="val-pos">5.29</td><td>26</td><td>76.9</td><td>0.00</td></tr>
+<tr><td><strong>COPPER</strong></td><td><span class="tag tag-metals">Metals</span></td><td>v3-RF</td><td class="val-pos">78.83</td><td class="val-pos">9.29</td><td class="val-pos">1.64</td><td>33</td><td>48.5</td><td>0.34</td></tr>
+<tr><td><strong>ETHEREUM</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td>v3-RF</td><td class="val-pos">11.09</td><td class="val-pos">11.80</td><td class="val-pos">2.23</td><td>60</td><td>51.7</td><td>0.01</td></tr>
+<tr><td><strong>XRP</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td>v3-RF</td><td class="val-neutral">0.00</td><td class="val-neutral">0.00</td><td class="val-neg">0.00</td><td>81</td><td>100.0</td><td>0.00</td></tr>
+<tr><td><strong>USDJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td>v3-RF</td><td class="val-pos">33.30</td><td class="val-pos">17.97</td><td class="val-pos">4.77</td><td>18</td><td>72.2</td><td>0.02</td></tr>
+</table></div>
+<div class="section"><h2>MT5 Backtest: Test Period (2025-12 ~ 2026-03)</h2>
+<table><tr><th>Symbol</th><th>Category</th><th>Model</th><th>Net Profit</th><th>Sharpe</th><th>PF</th><th>Trades</th><th>WR%</th><th>MaxDD%</th></tr>
+<tr><td><strong>QQQ.O</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td>v3-RF</td><td class="val-neutral">0.00</td><td class="val-neutral">0.00</td><td class="val-neutral">1.00</td><td>30</td><td>30.0</td><td>0.00</td></tr>
+<tr><td><strong>META.O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>v3-RF</td><td class="val-pos">1.48</td><td class="val-pos">16.57</td><td class="val-pos">3.35</td><td>24</td><td>62.5</td><td>0.00</td></tr>
+<tr><td><strong>BABA.N</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>v3-RF</td><td class="val-pos">0.13</td><td class="val-pos">6.93</td><td class="val-pos">1.50</td><td>27</td><td>51.9</td><td>0.00</td></tr>
+<tr><td><strong>NVDA.O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>v3-RF</td><td class="val-pos">0.35</td><td class="val-pos">13.17</td><td class="val-pos">3.19</td><td>20</td><td>65.0</td><td>0.00</td></tr>
+<tr><td><strong>SOLANA</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td>v3-RF</td><td class="val-neg">-0.27</td><td class="val-neg">-5.00</td><td class="val-neg">0.75</td><td>117</td><td>32.5</td><td>0.00</td></tr>
+<tr><td><strong>GOOGL.O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>v3-RF</td><td class="val-pos">0.23</td><td class="val-pos">5.48</td><td class="val-pos">1.40</td><td>31</td><td>41.9</td><td>0.00</td></tr>
+<tr><td><strong>COPPER</strong></td><td><span class="tag tag-metals">Metals</span></td><td>v3-RF</td><td class="val-pos">110.91</td><td class="val-pos">2.85</td><td class="val-pos">2.18</td><td>12</td><td>58.3</td><td>0.58</td></tr>
+<tr><td><strong>ETHEREUM</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td>v3-RF</td><td class="val-neg">-0.52</td><td class="val-neg">-0.65</td><td class="val-neg">0.96</td><td>67</td><td>35.8</td><td>0.06</td></tr>
+<tr><td><strong>XRP</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td>v3-RF</td><td class="val-neutral">0.00</td><td class="val-neutral">0.00</td><td class="val-neg">0.00</td><td>63</td><td>100.0</td><td>0.00</td></tr>
+<tr><td><strong>USDJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td>v3-RF</td><td class="val-pos">13.32</td><td class="val-pos">6.05</td><td class="val-pos">1.55</td><td>28</td><td>50.0</td><td>0.08</td></tr>
+</table></div>
+<div class="section"><h2>EDA Charts</h2>
+<div class="grid-2">
+<div class="chart-container"><img src="eda/01_volatility.png"><p class="chart-caption">01_volatility</p></div>
+<div class="chart-container"><img src="eda/02_return_distribution.png"><p class="chart-caption">02_return_distribution</p></div>
+<div class="chart-container"><img src="eda/03_trend_analysis.png"><p class="chart-caption">03_trend_analysis</p></div>
+<div class="chart-container"><img src="eda/04_autocorrelation.png"><p class="chart-caption">04_autocorrelation</p></div>
+<div class="chart-container"><img src="eda/05_correlation_matrix.png"><p class="chart-caption">05_correlation_matrix</p></div>
+<div class="chart-container"><img src="eda/06_spread_efficiency.png"><p class="chart-caption">06_spread_efficiency</p></div>
+<div class="chart-container"><img src="eda/07_composite_score.png"><p class="chart-caption">07_composite_score</p></div>
+<div class="chart-container"><img src="eda/08_hour_of_day.png"><p class="chart-caption">08_hour_of_day</p></div>
+<div class="chart-container"><img src="eda/09_day_of_week.png"><p class="chart-caption">09_day_of_week</p></div>
+<div class="chart-container"><img src="eda/10_regime_analysis.png"><p class="chart-caption">10_regime_analysis</p></div>
+<div class="chart-container"><img src="eda/11_tail_risk.png"><p class="chart-caption">11_tail_risk</p></div>
+<div class="chart-container"><img src="eda/12_session_analysis.png"><p class="chart-caption">12_session_analysis</p></div>
+<div class="chart-container"><img src="eda/13_monthly_patterns.png"><p class="chart-caption">13_monthly_patterns</p></div>
+<div class="chart-container"><img src="eda/14_holding_periods.png"><p class="chart-caption">14_holding_periods</p></div>
+<div class="chart-container"><img src="eda/15_leadlag_heatmap.png"><p class="chart-caption">15_leadlag_heatmap</p></div>
+<div class="chart-container"><img src="eda/16_xcorr_profiles.png"><p class="chart-caption">16_xcorr_profiles</p></div>
+<div class="chart-container"><img src="eda/17_intraday_leadlag.png"><p class="chart-caption">17_intraday_leadlag</p></div>
+<div class="chart-container"><img src="eda/18_session_spillover.png"><p class="chart-caption">18_session_spillover</p></div>
+<div class="chart-container"><img src="eda/19_granger_causality.png"><p class="chart-caption">19_granger_causality</p></div>
+<div class="chart-container"><img src="eda/20_autocorrelation.png"><p class="chart-caption">20_autocorrelation</p></div>
+<div class="chart-container"><img src="eda/21_signal_effectiveness.png"><p class="chart-caption">21_signal_effectiveness</p></div>
+<div class="chart-container"><img src="eda/22_signal_by_hold.png"><p class="chart-caption">22_signal_by_hold</p></div>
+<div class="chart-container"><img src="eda/23_sl_tp_optimization.png"><p class="chart-caption">23_sl_tp_optimization</p></div>
+<div class="chart-container"><img src="eda/24_vol_regime.png"><p class="chart-caption">24_vol_regime</p></div>
+<div class="chart-container"><img src="eda/25_drawdown_recovery.png"><p class="chart-caption">25_drawdown_recovery</p></div>
+<div class="chart-container"><img src="eda/26_equity_curves.png"><p class="chart-caption">26_equity_curves</p></div>
+<div class="chart-container"><img src="eda/27_strategy_comparison.png"><p class="chart-caption">27_strategy_comparison</p></div>
+<div class="chart-container"><img src="eda/28_monthly_returns.png"><p class="chart-caption">28_monthly_returns</p></div>
+<div class="chart-container"><img src="eda/29_trade_distribution.png"><p class="chart-caption">29_trade_distribution</p></div>
+<div class="chart-container"><img src="eda/30_portfolio_equity.png"><p class="chart-caption">30_portfolio_equity</p></div>
+<div class="chart-container"><img src="eda/31_train_vs_test.png"><p class="chart-caption">31_train_vs_test</p></div>
+<div class="chart-container"><img src="eda/32_cv_fold_stability.png"><p class="chart-caption">32_cv_fold_stability</p></div>
+<div class="chart-container"><img src="eda/33_feature_importance.png"><p class="chart-caption">33_feature_importance</p></div>
+<div class="chart-container"><img src="eda/34_confidence_distribution.png"><p class="chart-caption">34_confidence_distribution</p></div>
+<div class="chart-container"><img src="eda/35_signal_density_map.png"><p class="chart-caption">35_signal_density_map</p></div>
+<div class="chart-container"><img src="eda/36_equity_curves.png"><p class="chart-caption">36_equity_curves</p></div>
+<div class="chart-container"><img src="eda/37_symbol_performance.png"><p class="chart-caption">37_symbol_performance</p></div>
+<div class="chart-container"><img src="eda/38_train_val_test_degradation.png"><p class="chart-caption">38_train_val_test_degradation</p></div>
+<div class="chart-container"><img src="eda/39_pattern_examples.png"><p class="chart-caption">39_pattern_examples</p></div>
+<div class="chart-container"><img src="eda/40_regime_vs_patterns.png"><p class="chart-caption">40_regime_vs_patterns</p></div>
+<div class="chart-container"><img src="eda/41_aggregate_portfolio.png"><p class="chart-caption">41_aggregate_portfolio</p></div>
+<div class="chart-container"><img src="eda/42_method_comparison.png"><p class="chart-caption">42_method_comparison</p></div>
+<div class="chart-container"><img src="eda/43_ensemble_vs_individual.png"><p class="chart-caption">43_ensemble_vs_individual</p></div>
+<div class="chart-container"><img src="eda/44_signal_overlap.png"><p class="chart-caption">44_signal_overlap</p></div>
+<div class="chart-container"><img src="eda/45_cv_stability_by_method.png"><p class="chart-caption">45_cv_stability_by_method</p></div>
+<div class="chart-container"><img src="eda/46_best_method_heatmap.png"><p class="chart-caption">46_best_method_heatmap</p></div>
+<div class="chart-container"><img src="eda/47_ensemble_equity.png"><p class="chart-caption">47_ensemble_equity</p></div>
+<div class="chart-container"><img src="eda/48_winrate_vs_trades.png"><p class="chart-caption">48_winrate_vs_trades</p></div>
+<div class="chart-container"><img src="eda/49_profit_factor_comparison.png"><p class="chart-caption">49_profit_factor_comparison</p></div>
+<div class="chart-container"><img src="eda/50_aggregate_all_methods.png"><p class="chart-caption">50_aggregate_all_methods</p></div>
+<div class="chart-container"><img src="eda/51_final_recommendation.png"><p class="chart-caption">51_final_recommendation</p></div>
+<div class="chart-container"><img src="eda/PatternDetectV2_USDJPY-holding.png"><p class="chart-caption">PatternDetectV2_USDJPY-holding</p></div>
+<div class="chart-container"><img src="eda/PatternDetectV2_USDJPY-hst.png"><p class="chart-caption">PatternDetectV2_USDJPY-hst</p></div>
+<div class="chart-container"><img src="eda/PatternDetectV2_USDJPY-mfemae.png"><p class="chart-caption">PatternDetectV2_USDJPY-mfemae</p></div>
+<div class="chart-container"><img src="eda/PatternDetectV2_USDJPY.png"><p class="chart-caption">PatternDetectV2_USDJPY</p></div>
+<div class="chart-container"><img src="eda/PatternDetectV2_USDJPY_trainonly-mfemae.png"><p class="chart-caption">PatternDetectV2_USDJPY_trainonly-mfemae</p></div>
+<div class="chart-container"><img src="eda/PatternDetectV2_USDJPY_trainonly.png"><p class="chart-caption">PatternDetectV2_USDJPY_trainonly</p></div>
+</div></div>
+
+<div class="section"><h2>Reproduction Guide</h2>
+
+<div class="card highlight">
+<strong>EDA</strong>: PatternDetectV2.ex5 による初回 MT5 バックテスト (v1 モデル使用)
+</div>
+
+<div class="repro-box">
+<h4>MT5 Paths</h4>
+<table>
+<tr><th>Item</th><th>Path</th></tr>
+<tr><td>MT5 Terminal</td><td><code>C:\Program Files\FxPro - MetaTrader 5\terminal64.exe</code></td></tr>
+<tr><td>MT5 Data</td><td><code>C:\Users\Aruta\AppData\Roaming\MetaQuotes\Terminal\0148BD5691B65B0F2157627A4231F3DE</code></td></tr>
+<tr><td>EA Directory</td><td><code>[MT5 Data]\MQL5\Experts\</code></td></tr>
+<tr><td>MQL5 Files</td><td><code>[MT5 Data]\MQL5\Files\</code></td></tr>
+<tr><td>Common Files</td><td><code>C:\Users\Aruta\AppData\Roaming\MetaQuotes\Terminal\Common\Files\</code></td></tr>
+<tr><td>tester.ini</td><td><code>[MT5 Data]\tester.ini</code></td></tr>
+</table>
+</div>
+
+<h3>Python Analysis Re-Run</h3>
+<div class="repro-code">cd D:\MirrorMirror\FXtrade
+C:\Users\Aruta\miniforge3\envs\py39env\python.exe eda/eda_analysis.py</div>
+<p>Results: <code>eda/mt5_backtest_results.csv</code>, <code>eda/backtest_summary.csv</code></p>
+</div>
+
+</div>
+<div class="footer">
+  FXtrade ML Trading System - Phase Evaluation Report | Generated 2026-03-03
+</div>
+</body>
+</html>

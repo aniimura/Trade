@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>v3 Baseline: Unified-RF</title>
+<style>
+:root {
+  --bg: #0d1117; --card: #161b22; --border: #30363d;
+  --text: #c9d1d9; --text-dim: #8b949e;
+  --accent: #58a6ff; --green: #3fb950; --red: #f85149;
+  --orange: #d29922; --purple: #bc8cff; --pink: #f778ba;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',-apple-system,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; padding:0; }
+.header { background:linear-gradient(135deg,#1a1e2e 0%,#0d1117 100%); border-bottom:1px solid var(--border); padding:36px 0 24px; text-align:center; }
+.header h1 { font-size:2rem; font-weight:700; background:linear-gradient(90deg,var(--accent),var(--purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:6px; }
+.header .subtitle { color:var(--text-dim); font-size:0.95rem; }
+.header .meta { margin-top:12px; display:flex; justify-content:center; gap:24px; font-size:0.85rem; color:var(--text-dim); flex-wrap:wrap; }
+.header .meta .badge { background:rgba(88,166,255,0.15); color:var(--accent); padding:2px 10px; border-radius:12px; font-size:0.8rem; }
+.container { max-width:1280px; margin:0 auto; padding:0 24px; }
+.nav-bar { background:var(--card); border-bottom:1px solid var(--border); padding:10px 0; position:sticky; top:0; z-index:100; }
+.nav-bar .container { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.nav-link { color:var(--text-dim); text-decoration:none; padding:6px 14px; border-radius:6px; font-size:0.85rem; transition:all 0.2s; }
+.nav-link:hover { background:rgba(88,166,255,0.1); color:var(--accent); }
+.nav-link.active { background:rgba(88,166,255,0.15); color:var(--accent); font-weight:600; }
+.section { margin:36px 0; padding-top:12px; }
+.section h2 { font-size:1.4rem; font-weight:700; color:#e6edf3; padding-bottom:10px; border-bottom:2px solid var(--accent); margin-bottom:20px; }
+.section h3 { font-size:1.1rem; color:var(--purple); margin:24px 0 10px; }
+.card { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:20px; margin:14px 0; }
+.card.highlight { border-left:4px solid var(--accent); }
+.card.success { border-left:4px solid var(--green); }
+.card.warn { border-left:4px solid var(--orange); }
+.card.danger { border-left:4px solid var(--red); }
+table { width:100%; border-collapse:collapse; margin:12px 0; font-size:0.85rem; }
+th, td { padding:8px 12px; text-align:left; border-bottom:1px solid var(--border); }
+th { background:rgba(88,166,255,0.08); color:var(--accent); font-weight:600; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px; }
+tr:hover { background:rgba(255,255,255,0.02); }
+.val-pos { color:var(--green); font-weight:600; }
+.val-neg { color:var(--red); font-weight:600; }
+.val-neutral { color:var(--orange); font-weight:600; }
+.kpi-row { display:flex; gap:14px; flex-wrap:wrap; margin:14px 0; }
+.kpi { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:16px; flex:1; min-width:140px; text-align:center; }
+.kpi .value { font-size:1.6rem; font-weight:800; color:var(--accent); }
+.kpi .label { color:var(--text-dim); font-size:0.8rem; margin-top:2px; }
+.chart-container { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:14px; margin:16px 0; text-align:center; }
+.chart-container img { max-width:100%; height:auto; border-radius:4px; }
+.chart-caption { color:var(--text-dim); font-size:0.8rem; margin-top:6px; font-style:italic; }
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media (max-width:768px) { .grid-2 { grid-template-columns:1fr; } }
+.insight { background:rgba(88,166,255,0.06); border-left:3px solid var(--accent); padding:14px 18px; margin:14px 0; border-radius:0 6px 6px 0; font-size:0.9rem; }
+.insight strong { color:var(--accent); }
+.tag { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:600; margin:1px; }
+.tag-forex { background:rgba(31,119,180,0.2); color:#5dabf5; }
+.tag-metals { background:rgba(255,127,14,0.2); color:#ffb347; }
+.tag-indices { background:rgba(44,160,44,0.2); color:#6dd66d; }
+.tag-energy { background:rgba(214,39,40,0.2); color:#f87171; }
+.tag-crypto { background:rgba(148,103,189,0.2); color:#c4a3ff; }
+.tag-etfs { background:rgba(140,86,75,0.2); color:#c49a8e; }
+.tag-stocks { background:rgba(227,119,194,0.2); color:#f5a0d8; }
+.footer { text-align:center; padding:36px 0; color:var(--text-dim); font-size:0.8rem; border-top:1px solid var(--border); margin-top:48px; }
+p { margin:6px 0; } ul,ol { margin:6px 0 6px 24px; } li { margin:3px 0; } a { color:var(--accent); }
+.repro-box { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:20px; margin:14px 0; }
+.repro-box h4 { color:var(--accent); margin-bottom:10px; }
+.repro-code { background:#0d1117; border:1px solid var(--border); border-radius:6px; padding:14px; margin:8px 0; font-family:'Cascadia Code','Fira Code',monospace; font-size:0.82rem; overflow-x:auto; white-space:pre; color:#e6edf3; line-height:1.5; }
+.repro-step { counter-increment:repro; padding-left:36px; position:relative; margin:12px 0; }
+.repro-step::before { content:counter(repro); position:absolute; left:0; top:0; background:var(--accent); color:#0d1117; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700; }
+.repro-steps { counter-reset:repro; }
+</style>
+</head>
+<body>
+<div class="nav-bar"><div class="container"><a href="index.html" class="nav-link">Overview</a> <a href="phase_eda.html" class="nav-link">EDA</a> <a href="phase_v1.html" class="nav-link">v1 Per-Symbol RF</a> <a href="phase_v2.html" class="nav-link">v2 Multi-Method</a> <a href="phase_v3.html" class="nav-link active">v3 Baseline</a> <a href="phase1.html" class="nav-link">Phase 1</a> <a href="phase2.html" class="nav-link">Phase 2</a> <a href="phase3.html" class="nav-link">Phase 3</a> <a href="report.html" class="nav-link">Full Report</a></div></div>
+<div class="header">
+  <div class="container">
+    <h1>v3 Baseline: Unified-RF</h1>
+    <p class="subtitle">55 Symbols | 50 Features | HistGBT | MFE/MAE Labeling</p>
+    <div class="meta">
+      <span>Train: <span class="badge">~2025-09-01</span></span>
+      <span>Val: <span class="badge">2025-09-02 ~ 2025-12-01</span></span>
+      <span>Test: <span class="badge">2025-12-02 ~ 2026-03-02</span></span>
+      <span>MT5 IS: <span class="badge">2025-06-02 ~ 2025-09-02</span></span>
+      <span>MT5 Test: <span class="badge">2025-12-02 ~ 2026-03-01</span></span>
+    </div>
+  </div>
+</div>
+<div class="container">
+<div class="section"><h2>Model Overview</h2>
+<div class="card highlight">
+<table><tr><th>Item</th><th>Value</th></tr>
+<tr><td>Model</td><td>Unified-HistGBT (sklearn HistGradientBoostingClassifier)</td></tr>
+<tr><td>Features</td><td>50 (UNIFIED_FEATURES)</td></tr>
+<tr><td>Labeling</td><td>MFE/MAE (FORWARD_BARS=12, MFE_THRESHOLD=2.0, EDGE_THRESHOLD=1.5)</td></tr>
+<tr><td>Normalization</td><td>None (raw features)</td></tr>
+<tr><td>ONNX Export</td><td>PatternDetect_Unified.onnx (single model)</td></tr>
+<tr><td>EA</td><td>PatternDetectV3.mq5</td></tr>
+</table></div></div>
+<div class="section"><h2>Performance Summary</h2>
+<h3>Validation Period (2025-09 ~ 2025-12)</h3>
+<div class="kpi-row">
+<div class="kpi"><div class="value" style="color:var(--accent)">35/43</div><div class="label">OOS+</div></div><div class="kpi"><div class="value" style="color:var(--accent)">81%</div><div class="label">OOS+ Rate</div></div><div class="kpi"><div class="value" style="color:var(--accent)">1.94</div><div class="label">Mean Sharpe</div></div><div class="kpi"><div class="value" style="color:var(--accent)">43.6%</div><div class="label">Mean Win Rate</div></div><div class="kpi"><div class="value" style="color:var(--accent)">1.34</div><div class="label">Mean PF</div></div></div>
+<h3>Test Period (2025-12 ~ 2026-03)</h3>
+<div class="kpi-row">
+<div class="kpi"><div class="value" style="color:var(--green)">35/42</div><div class="label">OOS+</div></div><div class="kpi"><div class="value" style="color:var(--accent)">83%</div><div class="label">OOS+ Rate</div></div><div class="kpi"><div class="value" style="color:var(--accent)">2.08</div><div class="label">Mean Sharpe</div></div><div class="kpi"><div class="value" style="color:var(--accent)">43.9%</div><div class="label">Mean Win Rate</div></div><div class="kpi"><div class="value" style="color:var(--accent)">1.39</div><div class="label">Mean PF</div></div></div></div>
+<div class="section"><h2>Validation Results (Per Symbol)</h2>
+<table><tr><th>Symbol</th><th>Category</th><th>Trades</th><th>Return%</th><th>Sharpe</th><th>MaxDD%</th><th>WinRate%</th><th>PF</th></tr>
+<tr><td><strong>GLD_N</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td>49</td><td class="val-pos">21.58</td><td class="val-pos">7.85</td><td class="val-neg">-2.91</td><td>61.2</td><td class="val-pos">2.63</td></tr>
+<tr><td><strong>GOOGL_O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>50</td><td class="val-pos">27.67</td><td class="val-pos">5.17</td><td class="val-neg">-4.59</td><td>52.0</td><td class="val-pos">2.05</td></tr>
+<tr><td><strong>SILVER</strong></td><td><span class="tag tag-metals">Metals</span></td><td>93</td><td class="val-pos">31.64</td><td class="val-pos">4.71</td><td class="val-neg">-6.77</td><td>49.5</td><td class="val-pos">1.82</td></tr>
+<tr><td><strong>COIN_O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>49</td><td class="val-pos">53.55</td><td class="val-pos">4.70</td><td class="val-neg">-12.30</td><td>53.1</td><td class="val-pos">1.85</td></tr>
+<tr><td><strong>_USNDAQ100</strong></td><td><span class="tag tag-indices">Indices</span></td><td>120</td><td class="val-pos">18.17</td><td class="val-pos">4.64</td><td class="val-neg">-4.20</td><td>50.0</td><td class="val-pos">1.90</td></tr>
+<tr><td><strong>CHFJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td>67</td><td class="val-pos">3.77</td><td class="val-pos">4.63</td><td class="val-neg">-0.74</td><td>52.2</td><td class="val-pos">1.80</td></tr>
+<tr><td><strong>_Germany40</strong></td><td><span class="tag tag-indices">Indices</span></td><td>114</td><td class="val-pos">13.56</td><td class="val-pos">4.58</td><td class="val-neg">-1.44</td><td>50.0</td><td class="val-pos">1.82</td></tr>
+<tr><td><strong>BABA_N</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>52</td><td class="val-pos">28.74</td><td class="val-pos">4.08</td><td class="val-neg">-11.50</td><td>50.0</td><td class="val-pos">1.71</td></tr>
+<tr><td><strong>NVDA_O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>49</td><td class="val-pos">25.16</td><td class="val-pos">3.92</td><td class="val-neg">-7.28</td><td>49.0</td><td class="val-pos">1.73</td></tr>
+<tr><td><strong>EEM_N</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td>52</td><td class="val-pos">6.31</td><td class="val-pos">3.26</td><td class="val-neg">-5.02</td><td>46.2</td><td class="val-pos">1.51</td></tr>
+<tr><td><strong>SOXL_N</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td>47</td><td class="val-pos">42.55</td><td class="val-pos">3.21</td><td class="val-neg">-21.26</td><td>46.8</td><td class="val-pos">1.50</td></tr>
+<tr><td><strong>CARDANO</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td>97</td><td class="val-pos">36.98</td><td class="val-pos">3.06</td><td class="val-neg">-14.69</td><td>41.2</td><td class="val-pos">1.47</td></tr>
+<tr><td><strong>_AUS200</strong></td><td><span class="tag tag-indices">Indices</span></td><td>79</td><td class="val-pos">5.03</td><td class="val-pos">2.99</td><td class="val-neg">-3.19</td><td>43.0</td><td class="val-pos">1.49</td></tr>
+<tr><td><strong>EURGBP</strong></td><td><span class="tag tag-forex">Forex</span></td><td>86</td><td class="val-pos">1.95</td><td class="val-pos">2.91</td><td class="val-neg">-0.76</td><td>46.5</td><td class="val-pos">1.41</td></tr>
+<tr><td><strong>_Euro50</strong></td><td><span class="tag tag-indices">Indices</span></td><td>113</td><td class="val-pos">7.74</td><td class="val-pos">2.79</td><td class="val-neg">-1.69</td><td>46.0</td><td class="val-pos">1.41</td></tr>
+<tr><td><strong>AMZN_O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>54</td><td class="val-pos">13.06</td><td class="val-pos">2.62</td><td class="val-neg">-5.65</td><td>40.7</td><td class="val-pos">1.41</td></tr>
+<tr><td><strong>ETHEREUM</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td>119</td><td class="val-pos">32.61</td><td class="val-pos">2.58</td><td class="val-neg">-8.76</td><td>44.5</td><td class="val-pos">1.41</td></tr>
+<tr><td><strong>SOLANA</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td>101</td><td class="val-pos">29.25</td><td class="val-pos">2.40</td><td class="val-neg">-10.13</td><td>42.6</td><td class="val-pos">1.37</td></tr>
+<tr><td><strong>AAPL_O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>51</td><td class="val-pos">9.58</td><td class="val-pos">2.39</td><td class="val-neg">-6.52</td><td>49.0</td><td class="val-pos">1.40</td></tr>
+<tr><td><strong>XOM_N</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>57</td><td class="val-pos">8.43</td><td class="val-pos">2.17</td><td class="val-neg">-4.62</td><td>43.9</td><td class="val-pos">1.33</td></tr>
+<tr><td><strong>USDJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td>104</td><td class="val-pos">3.00</td><td class="val-pos">2.14</td><td class="val-neg">-1.60</td><td>41.3</td><td class="val-pos">1.30</td></tr>
+<tr><td><strong>VNQ_N</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td>53</td><td class="val-pos">5.07</td><td class="val-pos">2.09</td><td class="val-neg">-3.36</td><td>47.2</td><td class="val-pos">1.34</td></tr>
+<tr><td><strong>PLATINUM</strong></td><td><span class="tag tag-metals">Metals</span></td><td>100</td><td class="val-pos">16.02</td><td class="val-pos">2.08</td><td class="val-neg">-8.74</td><td>44.0</td><td class="val-pos">1.31</td></tr>
+<tr><td><strong>IWM_N</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td>54</td><td class="val-pos">7.28</td><td class="val-pos">2.02</td><td class="val-neg">-6.87</td><td>44.4</td><td class="val-pos">1.31</td></tr>
+<tr><td><strong>NAT_GAS</strong></td><td><span class="tag tag-energy">Energy</span></td><td>145</td><td class="val-pos">20.28</td><td class="val-pos">1.98</td><td class="val-neg">-8.47</td><td>41.4</td><td class="val-pos">1.26</td></tr>
+<tr><td><strong>GS_N</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>56</td><td class="val-pos">10.45</td><td class="val-pos">1.77</td><td class="val-neg">-9.90</td><td>39.3</td><td class="val-pos">1.27</td></tr>
+<tr><td><strong>COPPER</strong></td><td><span class="tag tag-metals">Metals</span></td><td>60</td><td class="val-pos">4.29</td><td class="val-pos">1.73</td><td class="val-neg">-3.11</td><td>45.0</td><td class="val-pos">1.29</td></tr>
+<tr><td><strong>XRP</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td>120</td><td class="val-pos">16.41</td><td class="val-pos">1.38</td><td class="val-neg">-8.42</td><td>39.2</td><td class="val-pos">1.20</td></tr>
+<tr><td><strong>_US30</strong></td><td><span class="tag tag-indices">Indices</span></td><td>149</td><td class="val-pos">3.72</td><td class="val-pos">1.33</td><td class="val-neg">-4.25</td><td>40.9</td><td class="val-pos">1.16</td></tr>
+<tr><td><strong>AUDJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td>82</td><td class="val-pos">1.58</td><td class="val-pos">1.12</td><td class="val-neg">-2.72</td><td>42.7</td><td class="val-pos">1.15</td></tr>
+<tr><td><strong>QQQ_O</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td>50</td><td class="val-pos">2.71</td><td class="val-pos">1.10</td><td class="val-neg">-5.98</td><td>40.0</td><td class="val-pos">1.16</td></tr>
+<tr><td><strong>_Japan225</strong></td><td><span class="tag tag-indices">Indices</span></td><td>103</td><td class="val-pos">3.88</td><td class="val-pos">1.08</td><td class="val-neg">-4.89</td><td>39.8</td><td class="val-pos">1.14</td></tr>
+<tr><td><strong>EURJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td>83</td><td class="val-pos">0.86</td><td class="val-pos">0.92</td><td class="val-neg">-1.97</td><td>37.3</td><td class="val-pos">1.12</td></tr>
+<tr><td><strong>MSFT_O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>55</td><td class="val-pos">1.48</td><td class="val-pos">0.40</td><td class="val-neg">-5.53</td><td>45.5</td><td class="val-pos">1.06</td></tr>
+<tr><td><strong>CADJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td>102</td><td class="val-pos">0.05</td><td class="val-pos">0.04</td><td class="val-neg">-1.54</td><td>37.3</td><td class="val-pos">1.00</td></tr>
+<tr><td><strong>META_O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>50</td><td class="val-neg">-0.37</td><td class="val-neg">-0.08</td><td class="val-neg">-11.26</td><td>44.0</td><td class="val-neg">0.99</td></tr>
+<tr><td><strong>JPM_N</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>57</td><td class="val-neg">-0.74</td><td class="val-neg">-0.18</td><td class="val-neg">-11.47</td><td>42.1</td><td class="val-neg">0.98</td></tr>
+<tr><td><strong>SPY_N</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td>53</td><td class="val-neg">-0.43</td><td class="val-neg">-0.23</td><td class="val-neg">-6.15</td><td>34.0</td><td class="val-neg">0.97</td></tr>
+<tr><td><strong>IBIT_O</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td>58</td><td class="val-neg">-6.95</td><td class="val-neg">-1.01</td><td class="val-neg">-27.38</td><td>36.2</td><td class="val-neg">0.88</td></tr>
+<tr><td><strong>EURUSD</strong></td><td><span class="tag tag-forex">Forex</span></td><td>130</td><td class="val-neg">-1.40</td><td class="val-neg">-1.21</td><td class="val-neg">-2.64</td><td>33.1</td><td class="val-neg">0.87</td></tr>
+<tr><td><strong>BA_N</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>51</td><td class="val-neg">-10.11</td><td class="val-neg">-2.27</td><td class="val-neg">-16.01</td><td>33.3</td><td class="val-neg">0.73</td></tr>
+<tr><td><strong>AMD_O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>50</td><td class="val-neg">-24.97</td><td class="val-neg">-2.89</td><td class="val-neg">-40.09</td><td>34.0</td><td class="val-neg">0.68</td></tr>
+<tr><td><strong>PFE_N</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>57</td><td class="val-neg">-18.54</td><td class="val-neg">-4.52</td><td class="val-neg">-22.19</td><td>33.3</td><td class="val-neg">0.55</td></tr>
+</table></div>
+<div class="section"><h2>Test Results (Per Symbol)</h2>
+<table><tr><th>Symbol</th><th>Category</th><th>Trades</th><th>Return%</th><th>Sharpe</th><th>MaxDD%</th><th>WinRate%</th><th>PF</th></tr>
+<tr><td><strong>CHFJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td>76</td><td class="val-pos">6.41</td><td class="val-pos">5.58</td><td class="val-neg">-1.15</td><td>53.9</td><td class="val-pos">2.00</td></tr>
+<tr><td><strong>GS_N</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>45</td><td class="val-pos">27.19</td><td class="val-pos">5.48</td><td class="val-neg">-4.24</td><td>55.6</td><td class="val-pos">2.17</td></tr>
+<tr><td><strong>EURUSD</strong></td><td><span class="tag tag-forex">Forex</span></td><td>93</td><td class="val-pos">5.49</td><td class="val-pos">5.43</td><td class="val-neg">-1.45</td><td>53.8</td><td class="val-pos">2.03</td></tr>
+<tr><td><strong>EURJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td>67</td><td class="val-pos">4.71</td><td class="val-pos">5.34</td><td class="val-neg">-1.11</td><td>50.7</td><td class="val-pos">1.94</td></tr>
+<tr><td><strong>EEM_N</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td>50</td><td class="val-pos">10.72</td><td class="val-pos">5.15</td><td class="val-neg">-1.87</td><td>50.0</td><td class="val-pos">1.95</td></tr>
+<tr><td><strong>XRP</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td>127</td><td class="val-pos">57.92</td><td class="val-pos">4.80</td><td class="val-neg">-11.64</td><td>50.4</td><td class="val-pos">1.83</td></tr>
+<tr><td><strong>USDJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td>87</td><td class="val-pos">6.19</td><td class="val-pos">4.65</td><td class="val-neg">-1.01</td><td>49.4</td><td class="val-pos">1.81</td></tr>
+<tr><td><strong>XOM_N</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>49</td><td class="val-pos">19.27</td><td class="val-pos">4.62</td><td class="val-neg">-7.23</td><td>49.0</td><td class="val-pos">1.88</td></tr>
+<tr><td><strong>ETHEREUM</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td>135</td><td class="val-pos">67.58</td><td class="val-pos">4.61</td><td class="val-neg">-12.80</td><td>45.9</td><td class="val-pos">1.90</td></tr>
+<tr><td><strong>CARDANO</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td>109</td><td class="val-pos">56.98</td><td class="val-pos">4.31</td><td class="val-neg">-9.94</td><td>52.3</td><td class="val-pos">1.73</td></tr>
+<tr><td><strong>JPM_N</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>48</td><td class="val-pos">14.71</td><td class="val-pos">3.50</td><td class="val-neg">-5.65</td><td>47.9</td><td class="val-pos">1.59</td></tr>
+<tr><td><strong>_AUS200</strong></td><td><span class="tag tag-indices">Indices</span></td><td>41</td><td class="val-pos">3.19</td><td class="val-pos">3.47</td><td class="val-neg">-1.64</td><td>46.3</td><td class="val-pos">1.61</td></tr>
+<tr><td><strong>VNQ_N</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td>47</td><td class="val-pos">8.30</td><td class="val-pos">3.36</td><td class="val-neg">-3.75</td><td>44.7</td><td class="val-pos">1.61</td></tr>
+<tr><td><strong>AAPL_O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>54</td><td class="val-pos">13.36</td><td class="val-pos">3.21</td><td class="val-neg">-4.42</td><td>46.3</td><td class="val-pos">1.54</td></tr>
+<tr><td><strong>SOXL_N</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td>41</td><td class="val-pos">35.56</td><td class="val-pos">3.19</td><td class="val-neg">-13.38</td><td>43.9</td><td class="val-pos">1.52</td></tr>
+<tr><td><strong>QQQ_O</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td>45</td><td class="val-pos">7.74</td><td class="val-pos">3.08</td><td class="val-neg">-2.97</td><td>42.2</td><td class="val-pos">1.56</td></tr>
+<tr><td><strong>_Germany40</strong></td><td><span class="tag tag-indices">Indices</span></td><td>95</td><td class="val-pos">7.00</td><td class="val-pos">3.04</td><td class="val-neg">-3.54</td><td>45.3</td><td class="val-pos">1.48</td></tr>
+<tr><td><strong>_USNDAQ100</strong></td><td><span class="tag tag-indices">Indices</span></td><td>123</td><td class="val-pos">10.40</td><td class="val-pos">2.76</td><td class="val-neg">-4.09</td><td>40.7</td><td class="val-pos">1.43</td></tr>
+<tr><td><strong>_Euro50</strong></td><td><span class="tag tag-indices">Indices</span></td><td>99</td><td class="val-pos">6.66</td><td class="val-pos">2.75</td><td class="val-neg">-2.74</td><td>44.4</td><td class="val-pos">1.42</td></tr>
+<tr><td><strong>COPPER</strong></td><td><span class="tag tag-metals">Metals</span></td><td>56</td><td class="val-pos">9.28</td><td class="val-pos">2.75</td><td class="val-neg">-3.83</td><td>48.2</td><td class="val-pos">1.46</td></tr>
+<tr><td><strong>NVDA_O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>51</td><td class="val-pos">15.87</td><td class="val-pos">2.67</td><td class="val-neg">-7.68</td><td>47.1</td><td class="val-pos">1.44</td></tr>
+<tr><td><strong>META_O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>47</td><td class="val-pos">11.47</td><td class="val-pos">2.53</td><td class="val-neg">-3.92</td><td>48.9</td><td class="val-pos">1.40</td></tr>
+<tr><td><strong>GLD_N</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td>44</td><td class="val-pos">7.00</td><td class="val-pos">2.27</td><td class="val-neg">-4.61</td><td>45.5</td><td class="val-pos">1.38</td></tr>
+<tr><td><strong>CADJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td>77</td><td class="val-pos">2.60</td><td class="val-pos">2.13</td><td class="val-neg">-2.24</td><td>44.2</td><td class="val-pos">1.30</td></tr>
+<tr><td><strong>SPY_N</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td>47</td><td class="val-pos">3.91</td><td class="val-pos">2.12</td><td class="val-neg">-2.34</td><td>42.6</td><td class="val-pos">1.34</td></tr>
+<tr><td><strong>SOLANA</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td>112</td><td class="val-pos">24.16</td><td class="val-pos">2.08</td><td class="val-neg">-21.55</td><td>40.2</td><td class="val-pos">1.30</td></tr>
+<tr><td><strong>PFE_N</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>46</td><td class="val-pos">7.11</td><td class="val-pos">2.01</td><td class="val-neg">-5.80</td><td>43.5</td><td class="val-pos">1.33</td></tr>
+<tr><td><strong>NAT_GAS</strong></td><td><span class="tag tag-energy">Energy</span></td><td>116</td><td class="val-pos">24.08</td><td class="val-pos">1.97</td><td class="val-neg">-17.14</td><td>42.2</td><td class="val-pos">1.26</td></tr>
+<tr><td><strong>_Japan225</strong></td><td><span class="tag tag-indices">Indices</span></td><td>79</td><td class="val-pos">3.64</td><td class="val-pos">1.28</td><td class="val-neg">-4.21</td><td>41.8</td><td class="val-pos">1.18</td></tr>
+<tr><td><strong>PLATINUM</strong></td><td><span class="tag tag-metals">Metals</span></td><td>54</td><td class="val-pos">7.35</td><td class="val-pos">1.18</td><td class="val-neg">-8.64</td><td>42.6</td><td class="val-pos">1.18</td></tr>
+<tr><td><strong>AMZN_O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>44</td><td class="val-pos">4.03</td><td class="val-pos">1.02</td><td class="val-neg">-4.62</td><td>40.9</td><td class="val-pos">1.16</td></tr>
+<tr><td><strong>MSFT_O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>48</td><td class="val-pos">2.65</td><td class="val-pos">0.68</td><td class="val-neg">-5.00</td><td>45.8</td><td class="val-pos">1.10</td></tr>
+<tr><td><strong>GOOGL_O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>50</td><td class="val-pos">3.01</td><td class="val-pos">0.66</td><td class="val-neg">-9.70</td><td>40.0</td><td class="val-pos">1.09</td></tr>
+<tr><td><strong>AUDJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td>80</td><td class="val-pos">0.14</td><td class="val-pos">0.09</td><td class="val-neg">-2.55</td><td>36.2</td><td class="val-pos">1.01</td></tr>
+<tr><td><strong>SILVER</strong></td><td><span class="tag tag-metals">Metals</span></td><td>68</td><td class="val-pos">0.33</td><td class="val-pos">0.04</td><td class="val-neg">-21.07</td><td>41.2</td><td class="val-pos">1.01</td></tr>
+<tr><td><strong>AMD_O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>45</td><td class="val-neg">-0.89</td><td class="val-neg">-0.13</td><td class="val-neg">-13.45</td><td>44.4</td><td class="val-neg">0.98</td></tr>
+<tr><td><strong>BA_N</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>47</td><td class="val-neg">-3.45</td><td class="val-neg">-0.74</td><td class="val-neg">-14.42</td><td>38.3</td><td class="val-neg">0.90</td></tr>
+<tr><td><strong>IBIT_O</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td>45</td><td class="val-neg">-7.94</td><td class="val-neg">-1.26</td><td class="val-neg">-17.97</td><td>40.0</td><td class="val-neg">0.84</td></tr>
+<tr><td><strong>_US30</strong></td><td><span class="tag tag-indices">Indices</span></td><td>155</td><td class="val-neg">-4.74</td><td class="val-neg">-1.87</td><td class="val-neg">-6.49</td><td>31.0</td><td class="val-neg">0.82</td></tr>
+<tr><td><strong>IWM_N</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td>48</td><td class="val-neg">-9.77</td><td class="val-neg">-3.73</td><td class="val-neg">-13.13</td><td>37.5</td><td class="val-neg">0.62</td></tr>
+<tr><td><strong>BABA_N</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>56</td><td class="val-neg">-21.27</td><td class="val-neg">-3.84</td><td class="val-neg">-21.63</td><td>26.8</td><td class="val-neg">0.62</td></tr>
+<tr><td><strong>COIN_O</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>53</td><td class="val-neg">-43.87</td><td class="val-neg">-4.93</td><td class="val-neg">-59.08</td><td>22.6</td><td class="val-neg">0.54</td></tr>
+</table></div>
+<div class="section"><h2>MT5 Backtest: Insample (2025-06 ~ 2025-09)</h2>
+<table><tr><th>Symbol</th><th>Category</th><th>Model</th><th>Net Profit</th><th>Sharpe</th><th>PF</th><th>Trades</th><th>WR%</th><th>MaxDD%</th></tr>
+<tr><td><strong>CHFJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td>v3-RF</td><td class="val-neg">-23.71</td><td class="val-neg">-5.00</td><td class="val-neg">0.34</td><td>22</td><td>13.6</td><td>0.26</td></tr>
+<tr><td><strong>GS.N</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>v3-RF</td><td class="val-neg">-0.62</td><td class="val-neg">-4.29</td><td class="val-neg">0.76</td><td>60</td><td>35.0</td><td>0.01</td></tr>
+<tr><td><strong>EURUSD</strong></td><td><span class="tag tag-forex">Forex</span></td><td>v3-RF</td><td class="val-pos">19.21</td><td class="val-pos">2.91</td><td class="val-pos">1.18</td><td>96</td><td>41.7</td><td>0.27</td></tr>
+<tr><td><strong>EURJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td>v3-RF</td><td class="val-pos">8.09</td><td class="val-pos">2.65</td><td class="val-pos">1.17</td><td>45</td><td>42.2</td><td>0.09</td></tr>
+<tr><td><strong>EEM.N</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td>v3-RF</td><td class="val-pos">0.02</td><td class="val-pos">0.27</td><td class="val-neg">0.00</td><td>9</td><td>100.0</td><td>0.00</td></tr>
+<tr><td><strong>XRP</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td>v3-RF</td><td class="val-neutral">0.00</td><td class="val-neutral">0.00</td><td class="val-neg">0.00</td><td>90</td><td>100.0</td><td>0.00</td></tr>
+<tr><td><strong>USDJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td>v3-RF</td><td class="val-pos">14.79</td><td class="val-pos">5.38</td><td class="val-pos">1.40</td><td>37</td><td>48.6</td><td>0.13</td></tr>
+<tr><td><strong>XOM.N</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>v3-RF</td><td class="val-pos">0.08</td><td class="val-pos">4.31</td><td class="val-pos">1.25</td><td>62</td><td>48.4</td><td>0.00</td></tr>
+<tr><td><strong>ETHEREUM</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td>v3-RF</td><td class="val-neg">-1.44</td><td class="val-neg">-2.20</td><td class="val-neg">0.87</td><td>44</td><td>31.8</td><td>0.03</td></tr>
+<tr><td><strong>CARDANO</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td>v3-RF</td><td class="val-neutral">0.00</td><td class="val-neutral">0.00</td><td class="val-neg">0.00</td><td>56</td><td>100.0</td><td>0.00</td></tr>
+</table></div>
+<div class="section"><h2>MT5 Backtest: Test Period (2025-12 ~ 2026-03)</h2>
+<table><tr><th>Symbol</th><th>Category</th><th>Model</th><th>Net Profit</th><th>Sharpe</th><th>PF</th><th>Trades</th><th>WR%</th><th>MaxDD%</th></tr>
+<tr><td><strong>CHFJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td>v3-RF</td><td class="val-pos">1.77</td><td class="val-pos">0.59</td><td class="val-pos">1.04</td><td>34</td><td>38.2</td><td>0.18</td></tr>
+<tr><td><strong>GS.N</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>v3-RF</td><td class="val-neg">-0.31</td><td class="val-neg">-1.14</td><td class="val-neg">0.92</td><td>54</td><td>42.6</td><td>0.01</td></tr>
+<tr><td><strong>EURUSD</strong></td><td><span class="tag tag-forex">Forex</span></td><td>v3-RF</td><td class="val-pos">4.24</td><td class="val-pos">0.76</td><td class="val-pos">1.05</td><td>98</td><td>40.8</td><td>0.17</td></tr>
+<tr><td><strong>EURJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td>v3-RF</td><td class="val-pos">7.49</td><td class="val-pos">2.84</td><td class="val-pos">1.22</td><td>33</td><td>39.4</td><td>0.08</td></tr>
+<tr><td><strong>EEM.N</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td>v3-RF</td><td class="val-pos">0.06</td><td class="val-pos">18.31</td><td class="val-pos">4.00</td><td>43</td><td>95.3</td><td>0.00</td></tr>
+<tr><td><strong>XRP</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td>v3-RF</td><td class="val-neutral">0.00</td><td class="val-neutral">0.00</td><td class="val-neg">0.00</td><td>89</td><td>100.0</td><td>0.00</td></tr>
+<tr><td><strong>USDJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td>v3-RF</td><td class="val-pos">8.83</td><td class="val-pos">2.77</td><td class="val-pos">1.21</td><td>42</td><td>40.5</td><td>0.13</td></tr>
+<tr><td><strong>XOM.N</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td>v3-RF</td><td class="val-neg">-0.30</td><td class="val-neg">-5.00</td><td class="val-neg">0.55</td><td>67</td><td>29.9</td><td>0.00</td></tr>
+<tr><td><strong>ETHEREUM</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td>v3-RF</td><td class="val-neg">-3.36</td><td class="val-neg">-4.47</td><td class="val-neg">0.77</td><td>69</td><td>30.4</td><td>0.06</td></tr>
+<tr><td><strong>CARDANO</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td>v3-RF</td><td class="val-neutral">0.00</td><td class="val-neutral">0.00</td><td class="val-neg">0.00</td><td>33</td><td>100.0</td><td>0.00</td></tr>
+</table></div>
+<div class="section"><h2>Feature Importance</h2>
+<table><tr><th>#</th><th>Feature</th><th>Importance</th><th>Bar</th></tr>
+<tr><td>1</td><td><strong>atr_ratio</strong></td><td>14.4%</td><td><div style="background:var(--accent);height:8px;border-radius:4px;width:72.1736932910243%"></div></td></tr>
+<tr><td>2</td><td><strong>d1_range_pct</strong></td><td>8.9%</td><td><div style="background:var(--accent);height:8px;border-radius:4px;width:44.4624841367321%"></div></td></tr>
+<tr><td>3</td><td><strong>hour_cos</strong></td><td>7.9%</td><td><div style="background:var(--accent);height:8px;border-radius:4px;width:39.702119632112755%"></div></td></tr>
+<tr><td>4</td><td><strong>atr_norm</strong></td><td>5.1%</td><td><div style="background:var(--accent);height:8px;border-radius:4px;width:25.4003154097617%"></div></td></tr>
+<tr><td>5</td><td><strong>hour_sin</strong></td><td>4.5%</td><td><div style="background:var(--accent);height:8px;border-radius:4px;width:22.6610333168313%"></div></td></tr>
+<tr><td>6</td><td><strong>symbol_id</strong></td><td>4.3%</td><td><div style="background:var(--accent);height:8px;border-radius:4px;width:21.7231730223746%"></div></td></tr>
+<tr><td>7</td><td><strong>category_id</strong></td><td>3.6%</td><td><div style="background:var(--accent);height:8px;border-radius:4px;width:17.834957537984902%"></div></td></tr>
+<tr><td>8</td><td><strong>equity_momentum</strong></td><td>3.1%</td><td><div style="background:var(--accent);height:8px;border-radius:4px;width:15.260805287833099%"></div></td></tr>
+<tr><td>9</td><td><strong>realized_vol</strong></td><td>3.0%</td><td><div style="background:var(--accent);height:8px;border-radius:4px;width:14.985279495849799%"></div></td></tr>
+<tr><td>10</td><td><strong>bb_width</strong></td><td>2.7%</td><td><div style="background:var(--accent);height:8px;border-radius:4px;width:13.662121923135402%"></div></td></tr>
+<tr><td>11</td><td><strong>vol_of_vol</strong></td><td>2.6%</td><td><div style="background:var(--accent);height:8px;border-radius:4px;width:12.912823919417049%"></div></td></tr>
+<tr><td>12</td><td><strong>risk_on_off</strong></td><td>2.3%</td><td><div style="background:var(--accent);height:8px;border-radius:4px;width:11.487155174412651%"></div></td></tr>
+<tr><td>13</td><td><strong>corr_to_spy</strong></td><td>2.2%</td><td><div style="background:var(--accent);height:8px;border-radius:4px;width:10.94007704172835%"></div></td></tr>
+<tr><td>14</td><td><strong>gold_bid</strong></td><td>2.0%</td><td><div style="background:var(--accent);height:8px;border-radius:4px;width:10.1829129897191%"></div></td></tr>
+<tr><td>15</td><td><strong>spread_ratio</strong></td><td>1.8%</td><td><div style="background:var(--accent);height:8px;border-radius:4px;width:9.10205929233335%"></div></td></tr>
+</table></div>
+<div class="section"><h2>Charts</h2>
+<div class="grid-2">
+<div class="chart-container"><img src="multi_model/results/52_unified_vs_persymbol.png"><p class="chart-caption">52_unified_vs_persymbol</p></div>
+<div class="chart-container"><img src="multi_model/results/53_feature_importance.png"><p class="chart-caption">53_feature_importance</p></div>
+<div class="chart-container"><img src="multi_model/results/54_category_performance.png"><p class="chart-caption">54_category_performance</p></div>
+<div class="chart-container"><img src="multi_model/results/55_symbol_heatmap.png"><p class="chart-caption">55_symbol_heatmap</p></div>
+<div class="chart-container"><img src="multi_model/results/56_cv_stability.png"><p class="chart-caption">56_cv_stability</p></div>
+<div class="chart-container"><img src="multi_model/results/57_aggregate_metrics.png"><p class="chart-caption">57_aggregate_metrics</p></div>
+</div></div>
+
+<div class="section"><h2>MT5 Backtest Reproduction Guide</h2>
+
+<div class="card highlight">
+<strong>v3 Baseline</strong>: PatternDetectV3.ex5 + PatternDetect_v3_Unified_RF.onnx
+</div>
+
+<div class="repro-box">
+<h4>MT5 Paths</h4>
+<table>
+<tr><th>Item</th><th>Path</th></tr>
+<tr><td>MT5 Terminal</td><td><code>C:\Program Files\FxPro - MetaTrader 5\terminal64.exe</code></td></tr>
+<tr><td>MT5 Data</td><td><code>C:\Users\Aruta\AppData\Roaming\MetaQuotes\Terminal\0148BD5691B65B0F2157627A4231F3DE</code></td></tr>
+<tr><td>EA Directory</td><td><code>[MT5 Data]\MQL5\Experts\</code></td></tr>
+<tr><td>MQL5 Files</td><td><code>[MT5 Data]\MQL5\Files\</code></td></tr>
+<tr><td>Common Files</td><td><code>C:\Users\Aruta\AppData\Roaming\MetaQuotes\Terminal\Common\Files\</code></td></tr>
+<tr><td>tester.ini</td><td><code>[MT5 Data]\tester.ini</code></td></tr>
+</table>
+</div>
+
+<h3>ONNX Archive (保存済み)</h3>
+<table>
+<tr><th>File</th><th>Size</th><th>Description</th></tr>
+<tr><td><code>PatternDetect_v3_Unified_RF.onnx</code></td><td>20,241 KB</td><td>v3 Unified-RF (恒久保存)</td></tr>
+</table>
+
+<h3>Step 1: ONNX 配置 (コピーのみ、再作成不要)</h3>
+<div class="repro-code">:: Common\Files
+copy "C:\Users\Aruta\AppData\Roaming\MetaQuotes\Terminal\Common\Files\PatternDetect_v3_Unified_RF.onnx" ^
+     "C:\Users\Aruta\AppData\Roaming\MetaQuotes\Terminal\Common\Files\PatternDetect_Unified.onnx"
+
+:: MQL5\Files
+copy "C:\Users\Aruta\AppData\Roaming\MetaQuotes\Terminal\0148BD5691B65B0F2157627A4231F3DE\MQL5\Files\PatternDetect_v3_Unified_RF.onnx" ^
+     "C:\Users\Aruta\AppData\Roaming\MetaQuotes\Terminal\0148BD5691B65B0F2157627A4231F3DE\MQL5\Files\PatternDetect_Unified.onnx"</div>
+
+<h3>Step 2: EA Settings</h3>
+<p>EA: <strong>PatternDetectV3.ex5</strong> (MQL5\Experts\ に配置済み)</p>
+<table>
+<tr><th>Parameter</th><th>Value</th><th>Description</th></tr>
+<tr><td>InpLotSize</td><td>0.01</td><td>固定ロットサイズ</td></tr>
+<tr><td>InpConfThreshold</td><td>0.70</td><td>パターン信頼度閾値 (1 - P(noise))</td></tr>
+<tr><td>InpSL_ATR_Mult</td><td>1.5</td><td>SL = 1.5 x ATR(14)</td></tr>
+<tr><td>InpTP_Ratio</td><td>2.0</td><td>TP = SL x 2.0 (リスクリワード 1:2)</td></tr>
+<tr><td>InpMaxHoldBars</td><td>12</td><td>最大保有バー数 (12時間)</td></tr>
+<tr><td>InpMagicNumber</td><td>20260303</td><td>EA識別番号</td></tr>
+<tr><td>InpUseUnified</td><td>true</td><td>統一モデル使用 (PatternDetect_Unified.onnx)</td></tr>
+</table>
+
+<h3>Step 3: tester.ini Configuration</h3>
+<p>以下のテンプレートで各シンボル x 各期間を実行:</p>
+<div class="repro-code">[Tester]
+Expert=PatternDetectV3
+Symbol=EURUSD
+Period=H1
+Model=1
+Optimization=0
+FromDate=2025.12.02
+ToDate=2026.03.01
+ForwardMode=0
+Deposit=10000
+Currency=USD
+ProfitInPips=0
+Leverage=100
+ExecutionMode=0
+Visual=0
+ShutdownTerminal=1
+ReplaceReport=1
+Report=v3_EURUSD_test</div>
+
+<h3>Step 4: Test Symbols (Top 10)</h3>
+<table>
+<tr><th>#</th><th>Symbol</th><th>Category</th></tr>
+<tr><td>1</td><td>CHFJPY</td><td>Forex</td></tr>
+<tr><td>2</td><td>GS.N</td><td>US_Stocks</td></tr>
+<tr><td>3</td><td>EURUSD</td><td>Forex</td></tr>
+<tr><td>4</td><td>EURJPY</td><td>Forex</td></tr>
+<tr><td>5</td><td>EEM.N</td><td>ETFs</td></tr>
+<tr><td>6</td><td>XRP</td><td>Crypto</td></tr>
+<tr><td>7</td><td>USDJPY</td><td>Forex</td></tr>
+<tr><td>8</td><td>XOM.N</td><td>US_Stocks</td></tr>
+<tr><td>9</td><td>ETHEREUM</td><td>Crypto</td></tr>
+<tr><td>10</td><td>CARDANO</td><td>Crypto</td></tr>
+</table>
+
+<h3>Step 5: Test Periods</h3>
+<table>
+<tr><th>Period</th><th>From</th><th>To</th><th>Purpose</th></tr>
+<tr><td><strong>Insample</strong></td><td>2025.06.02</td><td>2025.09.02</td><td>Train期間の末尾3ヶ月 (EA動作確認・過学習チェック)</td></tr>
+<tr><td><strong>Test</strong></td><td>2025.12.02</td><td>2026.03.01</td><td>完全未知期間での最終評価</td></tr>
+</table>
+
+<h3>Automated Execution</h3>
+<div class="repro-code">cd D:\MirrorMirror\FXtrade
+C:\Users\Aruta\miniforge3\envs\py39env\python.exe multi_model/run_backtests_v3.py</div>
+<p>Results: <code>multi_model/results/mt5_backtest_v3.csv</code></p>
+
+<h3>Python Analysis Re-Run</h3>
+<div class="repro-code">cd D:\MirrorMirror\FXtrade
+C:\Users\Aruta\miniforge3\envs\py39env\python.exe multi_model/pattern_detect_v3.py</div>
+<p>Results: <code>multi_model/results/pattern_v3_unified_results.csv</code></p>
+</div>
+
+</div>
+<div class="footer">
+  FXtrade ML Trading System - Phase Evaluation Report | Generated 2026-03-03
+</div>
+</body>
+</html>

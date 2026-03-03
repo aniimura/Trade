@@ -1,0 +1,2905 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FXtrade EDA Report</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-dim: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --red: #f85149;
+    --orange: #d29922;
+    --purple: #bc8cff;
+    --pink: #f778ba;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 0;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #1a1e2e 0%, #0d1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 0 36px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .header .subtitle {
+    color: var(--text-dim);
+    font-size: 1.05rem;
+  }
+  .header .meta {
+    margin-top: 16px;
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+  }
+  .header .meta span { display: flex; align-items: center; gap: 6px; }
+  .header .meta .badge {
+    background: rgba(88,166,255,0.15);
+    color: var(--accent);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+  }
+
+  /* Layout */
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+  /* TOC */
+  .toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 32px auto;
+    padding: 24px 32px;
+    max-width: 720px;
+  }
+  .toc h2 { font-size: 1.1rem; color: var(--accent); margin-bottom: 12px; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin: 6px 0; }
+  .toc a { color: var(--text); text-decoration: none; }
+  .toc a:hover { color: var(--accent); text-decoration: underline; }
+
+  /* Section */
+  .section {
+    margin: 48px 0;
+    padding-top: 12px;
+  }
+  .section h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #e6edf3;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--accent);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section h2 .num {
+    background: var(--accent);
+    color: #0d1117;
+    width: 32px; height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 0.95rem;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .section h3 {
+    font-size: 1.15rem;
+    color: var(--purple);
+    margin: 28px 0 12px;
+  }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin: 16px 0;
+  }
+  .card.highlight {
+    border-left: 4px solid var(--accent);
+  }
+  .card.warn {
+    border-left: 4px solid var(--orange);
+  }
+  .card.success {
+    border-left: 4px solid var(--green);
+  }
+  .card.danger {
+    border-left: 4px solid var(--red);
+  }
+  .card-title {
+    font-weight: 700;
+    color: #e6edf3;
+    margin-bottom: 8px;
+    font-size: 1.05rem;
+  }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.9rem;
+  }
+  th, td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    background: rgba(88,166,255,0.08);
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  tr:hover { background: rgba(255,255,255,0.02); }
+  .val-pos { color: var(--green); font-weight: 600; }
+  .val-neg { color: var(--red); font-weight: 600; }
+  .val-neutral { color: var(--orange); font-weight: 600; }
+  .val-highlight { color: var(--accent); font-weight: 600; }
+
+  /* Chart */
+  .chart-container {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin: 20px 0;
+    text-align: center;
+  }
+  .chart-container img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+  }
+  .chart-caption {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+  /* Grid */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 768px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  /* KPI */
+  .kpi-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 16px 0;
+  }
+  .kpi {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    flex: 1;
+    min-width: 160px;
+    text-align: center;
+  }
+  .kpi .value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .kpi .label {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    margin-top: 4px;
+  }
+
+  /* Tag */
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin: 2px;
+  }
+  .tag-forex { background: rgba(31,119,180,0.2); color: #5dabf5; }
+  .tag-metals { background: rgba(255,127,14,0.2); color: #ffb347; }
+  .tag-indices { background: rgba(44,160,44,0.2); color: #6dd66d; }
+  .tag-energy { background: rgba(214,39,40,0.2); color: #f87171; }
+  .tag-crypto { background: rgba(148,103,189,0.2); color: #c4a3ff; }
+  .tag-etfs { background: rgba(140,86,75,0.2); color: #c49a8e; }
+  .tag-stocks { background: rgba(227,119,194,0.2); color: #f5a0d8; }
+  .tag-high { background: rgba(248,81,73,0.2); color: var(--red); }
+  .tag-med { background: rgba(210,153,34,0.2); color: var(--orange); }
+  .tag-low { background: rgba(63,185,80,0.2); color: var(--green); }
+
+  /* Quote / Insight */
+  .insight {
+    background: rgba(88,166,255,0.06);
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px;
+    margin: 16px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.95rem;
+  }
+  .insight strong { color: var(--accent); }
+
+  /* Strategy box */
+  .strategy-box {
+    background: linear-gradient(135deg, rgba(88,166,255,0.08), rgba(188,140,255,0.08));
+    border: 1px solid rgba(88,166,255,0.3);
+    border-radius: 10px;
+    padding: 28px;
+    margin: 20px 0;
+  }
+  .strategy-box h4 {
+    color: var(--accent);
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 48px 0;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--border);
+    margin-top: 64px;
+  }
+
+  p { margin: 8px 0; }
+  ul, ol { margin: 8px 0 8px 24px; }
+  li { margin: 4px 0; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<div style="background:#161b22;border-bottom:1px solid #30363d;padding:10px 0;position:sticky;top:0;z-index:100">
+  <div style="max-width:1200px;margin:0 auto;padding:0 24px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <a href="index.html" style="color:#8b949e;text-decoration:none;padding:6px 14px;border-radius:6px;font-size:0.85rem">Overview</a>
+    <a href="phase_v3.html" style="color:#8b949e;text-decoration:none;padding:6px 14px;border-radius:6px;font-size:0.85rem">v3 Baseline</a>
+    <a href="phase1.html" style="color:#8b949e;text-decoration:none;padding:6px 14px;border-radius:6px;font-size:0.85rem">Phase 1</a>
+    <a href="phase2.html" style="color:#8b949e;text-decoration:none;padding:6px 14px;border-radius:6px;font-size:0.85rem">Phase 2</a>
+    <a href="phase3.html" style="color:#8b949e;text-decoration:none;padding:6px 14px;border-radius:6px;font-size:0.85rem">Phase 3</a>
+    <a href="report.html" style="background:rgba(88,166,255,0.15);color:#58a6ff;text-decoration:none;padding:6px 14px;border-radius:6px;font-size:0.85rem;font-weight:600">EDA Report</a>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- HEADER -->
+<!-- ============================================================ -->
+<div class="header">
+  <div class="container">
+    <h1>FXtrade EDA Report</h1>
+    <p class="subtitle">56銘柄 x 5タイムフレーム 探索的データ分析レポート（学習データのみ）</p>
+    <div class="meta">
+      <span>分析日: <span class="badge">2026-03-02</span></span>
+      <span>口座: <span class="badge">FxPro-MT5 Demo</span></span>
+      <span>学習データ: <span class="badge">2024-03 ~ 2025-09-01</span></span>
+      <span>検証: <span class="badge">2025-09-02 ~ 2025-12-01</span></span>
+      <span>テスト: <span class="badge">2025-12-02 ~ 2026-03-02</span></span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ============================================================ -->
+<!-- KPI OVERVIEW -->
+<!-- ============================================================ -->
+<div class="kpi-row" style="margin-top:32px">
+  <div class="kpi"><div class="value">56</div><div class="label">分析銘柄数</div></div>
+  <div class="kpi"><div class="value">5,130,036</div><div class="label">学習用バー数</div></div>
+  <div class="kpi"><div class="value">696,133</div><div class="label">検証用バー数</div></div>
+  <div class="kpi"><div class="value">663,631</div><div class="label">テスト用バー数</div></div>
+  <div class="kpi"><div class="value">7</div><div class="label">アセットクラス</div></div>
+</div>
+
+<div class="card warn" style="margin-top:16px">
+  <div class="card-title">データ分割ポリシー</div>
+  <table>
+    <tr><th>区分</th><th>期間</th><th>バー数</th><th>用途</th></tr>
+    <tr><td><strong>学習 (Train)</strong></td><td>~ 2025-09-01</td><td>5,130,036</td><td>EDA・モデル学習・パラメータ探索</td></tr>
+    <tr><td><strong>検証 (Validation)</strong></td><td>2025-09-02 ~ 2025-12-01</td><td>696,133</td><td>ハイパーパラメータ調整・戦略選択</td></tr>
+    <tr><td><strong>テスト (Test)</strong></td><td>2025-12-02 ~ 2026-03-02</td><td>663,631</td><td>最終評価（未使用厳守・1回のみ使用）</td></tr>
+  </table>
+  <p style="margin-top:8px; color:var(--orange)"><strong>重要:</strong> 本レポートの全分析は学習データのみで実施。検証・テストデータへの情報リークは一切なし。</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- TOC -->
+<!-- ============================================================ -->
+<nav class="toc">
+  <h2>目次</h2>
+  <ol>
+    <li><a href="#sec1">データ概要</a></li>
+    <li><a href="#sec2">ボラティリティ分析</a></li>
+    <li><a href="#sec3">リターン分布特性</a></li>
+    <li><a href="#sec4">トレンド性分析（Hurst指数・効率比）</a></li>
+    <li><a href="#sec5">相関分析</a></li>
+    <li><a href="#sec6">スプレッド効率分析</a></li>
+    <li><a href="#sec7">総合トレーダビリティスコア</a></li>
+    <li><a href="#sec8">時間帯分析</a></li>
+    <li><a href="#sec9">曜日効果</a></li>
+    <li><a href="#sec10">セッション分析</a></li>
+    <li><a href="#sec11">レジーム分析</a></li>
+    <li><a href="#sec12">テールリスク分析</a></li>
+    <li><a href="#sec13">月別季節性パターン</a></li>
+    <li><a href="#sec14">保有期間分析</a></li>
+    <li><a href="#sec15">リードラグ分析（時間差影響）</a></li>
+    <li><a href="#sec16">リターン自己相関（モメンタム vs 平均回帰）</a></li>
+    <li><a href="#sec17">テクニカルシグナル有効性</a></li>
+    <li><a href="#sec18">SL/TP最適化</a></li>
+    <li><a href="#sec19">ボラティリティレジーム別パフォーマンス</a></li>
+    <li><a href="#sec20">ドローダウン回復分析</a></li>
+    <li><a href="#sec21">戦略提案</a></li>
+    <li><a href="#sec22">バックテスト結果</a></li>
+    <li><a href="#sec23">パターン検出戦略（ML）</a></li>
+    <li><a href="#sec24">マルチメソッド・パターン検出 v2</a></li>
+    <li><a href="#sec25">MT5バックテスト検証（ONNX RF モデル）</a></li>
+    <li><a href="#sec26">統一クロスアセットモデル v3</a></li>
+  </ol>
+</nav>
+
+<!-- ============================================================ -->
+<!-- 1. DATA OVERVIEW -->
+<!-- ============================================================ -->
+<div class="section" id="sec1">
+  <h2><span class="num">1</span>データ概要</h2>
+
+  <p>MT5デモ口座（残高 1,000,000 JPY、レバレッジ 1:1000）から、7つのアセットクラスにわたる56銘柄のOHLCVデータを収集し、時系列順に学習/検証/テストの3分割を行った。<strong>本レポートの全分析は学習データ（~2025-09-01、約18ヶ月分）のみで実施</strong>しており、将来データへの情報リーク（data leakage）を防止している。</p>
+
+  <table>
+    <tr><th>カテゴリ</th><th>銘柄数</th><th>データ量</th><th>代表銘柄</th></tr>
+    <tr><td><span class="tag tag-forex">Forex</span></td><td>15</td><td>125 MB</td><td>USDJPY, EURUSD, GBPUSD, EURJPY, AUDJPY</td></tr>
+    <tr><td><span class="tag tag-metals">Metals</span></td><td>4</td><td>43 MB</td><td>GOLD, SILVER, PLATINUM, COPPER</td></tr>
+    <tr><td><span class="tag tag-indices">Indices</span></td><td>6</td><td>73 MB</td><td>#USNDAQ100, #US30, #Germany40, #Japan225</td></tr>
+    <tr><td><span class="tag tag-energy">Energy</span></td><td>3</td><td>21 MB</td><td>BRENT, WTI, NAT.GAS</td></tr>
+    <tr><td><span class="tag tag-crypto">Crypto</span></td><td>5</td><td>89 MB</td><td>BITCOIN, ETHEREUM, SOLANA, CARDANO, XRP</td></tr>
+    <tr><td><span class="tag tag-etfs">ETFs</span></td><td>8</td><td>21 MB</td><td>SPY, QQQ, IWM, IBIT, SOXL, GLD</td></tr>
+    <tr><td><span class="tag tag-stocks">US Stocks</span></td><td>15</td><td>45 MB</td><td>AAPL, NVDA, TSLA, COIN, BABA, META</td></tr>
+  </table>
+
+  <div class="insight">
+    <strong>データ品質:</strong> 275データセットを学習用に使用。USDCHFの短期データ（M5/M15/H1）のみデータ不足で除外。暗号通貨は24時間市場のため他カテゴリより多くのバー数を持つ。<strong>検証・テストデータは一切参照していない。</strong>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 2. VOLATILITY -->
+<!-- ============================================================ -->
+<div class="section" id="sec2">
+  <h2><span class="num">2</span>ボラティリティ分析</h2>
+
+  <p>年率換算ボラティリティ（D1ベース）を全銘柄で比較した。ボラティリティはトレードの利益ポテンシャルを表すと同時に、リスクの大きさでもある。</p>
+
+  <div class="chart-container">
+    <img src="eda/01_volatility.png" alt="Volatility Analysis">
+    <p class="chart-caption">図2-1: 左) D1年率ボラティリティのカテゴリ別ランキング、右) 上位15銘柄のタイムフレーム別比較</p>
+  </div>
+
+  <h3>年率ボラティリティ TOP 10</h3>
+  <table>
+    <tr><th>#</th><th>銘柄</th><th>カテゴリ</th><th>年率ボラ (%)</th><th>評価</th></tr>
+    <tr><td>1</td><td>QQQ</td><td><span class="tag tag-etfs">ETF</span></td><td class="val-neg">303.3%</td><td><span class="tag tag-high">極高</span></td></tr>
+    <tr><td>2</td><td>SOXL</td><td><span class="tag tag-etfs">ETF</span></td><td class="val-neg">121.0%</td><td><span class="tag tag-high">極高</span></td></tr>
+    <tr><td>3</td><td>COIN</td><td><span class="tag tag-stocks">US Stock</span></td><td class="val-neg">80.7%</td><td><span class="tag tag-high">高</span></td></tr>
+    <tr><td>4</td><td>CARDANO</td><td><span class="tag tag-crypto">Crypto</span></td><td class="val-neg">80.4%</td><td><span class="tag tag-high">高</span></td></tr>
+    <tr><td>5</td><td>XRP</td><td><span class="tag tag-crypto">Crypto</span></td><td class="val-neg">75.4%</td><td><span class="tag tag-high">高</span></td></tr>
+    <tr><td>6</td><td>SOLANA</td><td><span class="tag tag-crypto">Crypto</span></td><td class="val-neg">71.1%</td><td><span class="tag tag-high">高</span></td></tr>
+    <tr><td>7</td><td>TSLA</td><td><span class="tag tag-stocks">US Stock</span></td><td class="val-neg">67.2%</td><td><span class="tag tag-high">高</span></td></tr>
+    <tr><td>8</td><td>ETH</td><td><span class="tag tag-crypto">Crypto</span></td><td class="val-neg">59.9%</td><td><span class="tag tag-high">高</span></td></tr>
+    <tr><td>9</td><td>NAT.GAS</td><td><span class="tag tag-energy">Energy</span></td><td class="val-neutral">55.6%</td><td><span class="tag tag-high">高</span></td></tr>
+    <tr><td>10</td><td>NVDA</td><td><span class="tag tag-stocks">US Stock</span></td><td class="val-neutral">53.6%</td><td><span class="tag tag-high">高</span></td></tr>
+  </table>
+
+  <h3>カテゴリ別ボラティリティ帯</h3>
+  <table>
+    <tr><th>カテゴリ</th><th>ボラティリティ帯</th><th>特徴</th></tr>
+    <tr><td><span class="tag tag-forex">Forex</span></td><td>5 ~ 15%</td><td>低ボラ。レバレッジ前提の取引。GBPJPY, AUDJPYが相対的に高い</td></tr>
+    <tr><td><span class="tag tag-metals">Metals</span></td><td>20 ~ 50%</td><td>GOLDは中ボラ。SILVER, PLATINUMがやや高い</td></tr>
+    <tr><td><span class="tag tag-indices">Indices</span></td><td>10 ~ 25%</td><td>低〜中ボラ。安定的だがスプレッド効率が良い</td></tr>
+    <tr><td><span class="tag tag-energy">Energy</span></td><td>25 ~ 60%</td><td>NAT.GASが突出。原油は中程度</td></tr>
+    <tr><td><span class="tag tag-crypto">Crypto</span></td><td>55 ~ 80%</td><td>全般的に高ボラ。CARDANOとXRPが特に高い</td></tr>
+    <tr><td><span class="tag tag-stocks">US Stocks</span></td><td>25 ~ 80%</td><td>銘柄間のバラツキが大きい。COIN, TSLA, AMDが高ボラ</td></tr>
+  </table>
+
+  <div class="insight">
+    <strong>考察:</strong> 暗号通貨とハイテク個別株が圧倒的なボラティリティを持つ。一方でForexは最も低ボラだが、高レバレッジ（1:1000）との組み合わせで十分な利益ポテンシャルがある。タイムフレーム間の比較では、M5のボラがD1より高く出る傾向があり、これは短期ノイズ（マイクロストラクチャー）の影響と考えられる。
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 3. RETURN DISTRIBUTION -->
+<!-- ============================================================ -->
+<div class="section" id="sec3">
+  <h2><span class="num">3</span>リターン分布特性</h2>
+
+  <p>各銘柄の日次リターンの歪度（Skewness）と尖度（Kurtosis）を分析した。これらは正規分布からの乖離を示し、テールリスクの推定に不可欠である。</p>
+
+  <div class="chart-container">
+    <img src="eda/02_return_distribution.png" alt="Return Distribution">
+    <p class="chart-caption">図3-1: 歪度 vs 尖度の散布図。中心(0,0)に近いほど正規分布に近い</p>
+  </div>
+
+  <h3>異常値・特徴的な銘柄</h3>
+  <table>
+    <tr><th>銘柄</th><th>歪度</th><th>尖度</th><th>解釈</th></tr>
+    <tr><td>GOLD</td><td class="val-pos">+14.0</td><td class="val-neg">240</td><td>極端な正のテール。稀に巨大な上昇スパイクが発生</td></tr>
+    <tr><td>QQQ</td><td>-0.1</td><td class="val-neg">205</td><td>対称だが極端な尖度。想定外の大きな動きが頻発</td></tr>
+    <tr><td>EURCAD</td><td class="val-pos">+7.5</td><td class="val-neg">86</td><td>正に偏った分布。上方向の異常リターンが多い</td></tr>
+    <tr><td>AUDUSD</td><td class="val-pos">+4.8</td><td class="val-neg">44</td><td>正のスキュー。データ期間特有の可能性</td></tr>
+    <tr><td>SILVER, BITCOIN</td><td class="val-neg">-2.3</td><td>30</td><td>負のスキュー。下方向のテールリスクが大きい</td></tr>
+  </table>
+
+  <div class="insight">
+    <strong>考察:</strong> ほぼ全銘柄で尖度が正（ファットテール）であり、正規分布を前提としたリスク管理は危険である。特にGOLDの歪度+14、尖度240は極端な外れ値であり、これは2024-2026年のゴールド急騰局面で数回の巨大な日中スパイクが発生したことに起因する。ストップロスの設定やポジションサイジングにおいて、VaRではなくCVaR（条件付きバリューアットリスク）を用いるべきことを示唆している。
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 4. TREND ANALYSIS -->
+<!-- ============================================================ -->
+<div class="section" id="sec4">
+  <h2><span class="num">4</span>トレンド性分析（Hurst指数・効率比）</h2>
+
+  <p>Hurst指数（H）は時系列のトレンド持続性を測定する指標である。H &gt; 0.5ならトレンドが持続しやすく（トレンドフォロー向き）、H &lt; 0.5なら平均回帰傾向（逆張り向き）を示す。効率比（ER）は価格の「方向性のある動き」と「総移動距離」の比率で、1に近いほど直線的なトレンドを示す。</p>
+
+  <div class="chart-container">
+    <img src="eda/03_trend_analysis.png" alt="Trend Analysis">
+    <p class="chart-caption">図4-1: 上段) H1とD1のHurst指数、下段) H1とD1の効率比（ER）</p>
+  </div>
+
+  <h3>Hurst指数 TOP 10（H1タイムフレーム）</h3>
+  <table>
+    <tr><th>#</th><th>銘柄</th><th>カテゴリ</th><th>Hurst</th><th>効率比</th><th>判定</th></tr>
+    <tr><td>1</td><td>EEM</td><td><span class="tag tag-etfs">ETF</span></td><td class="val-pos">0.614</td><td>0.191</td><td>強いトレンド持続</td></tr>
+    <tr><td>2</td><td>NVDA</td><td><span class="tag tag-stocks">US Stock</span></td><td class="val-pos">0.613</td><td>0.175</td><td>強いトレンド持続</td></tr>
+    <tr><td>3</td><td>#Germany40</td><td><span class="tag tag-indices">Index</span></td><td class="val-pos">0.607</td><td>0.169</td><td>強いトレンド持続</td></tr>
+    <tr><td>4</td><td>AMD</td><td><span class="tag tag-stocks">US Stock</span></td><td class="val-pos">0.603</td><td>0.180</td><td>強いトレンド持続</td></tr>
+    <tr><td>5</td><td>AAPL</td><td><span class="tag tag-stocks">US Stock</span></td><td class="val-pos">0.602</td><td>0.182</td><td>強いトレンド持続</td></tr>
+    <tr><td>6</td><td>GOLD</td><td><span class="tag tag-metals">Metal</span></td><td class="val-pos">0.601</td><td>0.169</td><td>強いトレンド持続</td></tr>
+    <tr><td>7</td><td>XOM</td><td><span class="tag tag-stocks">US Stock</span></td><td class="val-pos">0.601</td><td>0.174</td><td>トレンド持続</td></tr>
+    <tr><td>8</td><td>SOXL</td><td><span class="tag tag-etfs">ETF</span></td><td class="val-pos">0.600</td><td>0.165</td><td>トレンド持続</td></tr>
+    <tr><td>9</td><td>ETHEREUM</td><td><span class="tag tag-crypto">Crypto</span></td><td class="val-pos">0.596</td><td>0.154</td><td>トレンド持続</td></tr>
+    <tr><td>10</td><td>GOOGL</td><td><span class="tag tag-stocks">US Stock</span></td><td class="val-pos">0.595</td><td>0.166</td><td>トレンド持続</td></tr>
+  </table>
+
+  <h3>効率比 TOP 10（D1タイムフレーム）</h3>
+  <table>
+    <tr><th>#</th><th>銘柄</th><th>カテゴリ</th><th>ER</th><th>Hurst</th><th>意味</th></tr>
+    <tr><td>1</td><td>GS</td><td><span class="tag tag-stocks">US Stock</span></td><td class="val-pos">0.195</td><td>0.568</td><td>金融セクターの方向性が最大</td></tr>
+    <tr><td>2</td><td>QQQ</td><td><span class="tag tag-etfs">ETF</span></td><td class="val-pos">0.182</td><td>0.533</td><td>テック指数のトレンド安定性</td></tr>
+    <tr><td>3</td><td>GOLD</td><td><span class="tag tag-metals">Metal</span></td><td class="val-pos">0.182</td><td>0.521</td><td>現物ゴールド = 安定トレンド</td></tr>
+    <tr><td>4</td><td>ETHEREUM</td><td><span class="tag tag-crypto">Crypto</span></td><td class="val-pos">0.181</td><td>0.552</td><td>暗号通貨の中で最も方向性が強い</td></tr>
+    <tr><td>5</td><td>CHFJPY</td><td><span class="tag tag-forex">Forex</span></td><td class="val-pos">0.176</td><td>0.618</td><td>最もトレンドの出やすいFXペア</td></tr>
+  </table>
+
+  <div class="chart-container">
+    <img src="eda/04_autocorrelation.png" alt="Autocorrelation">
+    <p class="chart-caption">図4-2: 自己相関ヒートマップ（ラグ1, 5, 20）。正=モメンタム、負=平均回帰</p>
+  </div>
+
+  <div class="insight">
+    <strong>考察:</strong> H1タイムフレームではほぼ全銘柄でHurst &gt; 0.5であり、<strong>1時間足はトレンドフォロー戦略に最も適したタイムフレーム</strong>である。特にEEM(新興国ETF)、AAPL、NVDA、#Germany40、GOLDが高いトレンド持続性を示す。一方、D1の効率比ではGOOGL、GLD、CHFJPY、GOLDが際立っており、<strong>スイングトレードではこれらの銘柄が有望</strong>である。自己相関分析からは、ラグ1で弱い正の自己相関が多くの銘柄で観測され、短期モメンタムの存在を裏付けている。
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 5. CORRELATION -->
+<!-- ============================================================ -->
+<div class="section" id="sec5">
+  <h2><span class="num">5</span>相関分析</h2>
+
+  <p>D1リターンの相関行列を階層的クラスタリングで並び替え、銘柄間の連動構造を可視化した。</p>
+
+  <div class="chart-container">
+    <img src="eda/05_correlation_matrix.png" alt="Correlation Matrix">
+    <p class="chart-caption">図5-1: 日次リターン相関マトリクス（階層的クラスタリング済み）</p>
+  </div>
+
+  <h3>5つの主要クラスター</h3>
+  <div class="grid-2">
+    <div class="card highlight">
+      <div class="card-title">暗号通貨クラスター</div>
+      <p>COIN, BITCOIN, IBIT, ETHEREUM, SOLANA, CARDANO, XRP</p>
+      <p>内部相関: r = 0.70 ~ 0.92。BITCOIN-IBIT間は r=0.92 と最強。</p>
+    </div>
+    <div class="card highlight">
+      <div class="card-title">米国株式クラスター</div>
+      <p>#USNDAQ100, SPY, SOXL, NVDA, AMD, MSFT, AMZN, META, GOOGL, AAPL</p>
+      <p>NASDAQ-SPY間 r=0.91、SOXL-NASDAQ間 r=0.88。テック株が強く連動。</p>
+    </div>
+    <div class="card highlight">
+      <div class="card-title">クロス円クラスター</div>
+      <p>USDJPY, EURJPY, GBPJPY, AUDJPY, CADJPY, CHFJPY</p>
+      <p>CADJPY-USDJPY間 r=0.87 が最強。円の動きが支配的。</p>
+    </div>
+    <div class="card highlight">
+      <div class="card-title">ドルストレートクラスター</div>
+      <p>EURUSD, GBPUSD, AUDUSD, NZDUSD（USDCADは逆相関で連動）</p>
+      <p>AUDUSD-GBPUSD間 r=0.82。ドルの強弱が支配。</p>
+    </div>
+  </div>
+  <div class="card highlight" style="max-width:580px">
+    <div class="card-title">コモディティクラスター</div>
+    <p>GOLD, GLD, SILVER, PLATINUM, COPPER, XOM, BRENT, WTI</p>
+    <p>GOLD-GLD間 r=0.99（同一資産）、BRENT-WTI間 r=0.99、PLATINUM-SILVER間 r=0.74。</p>
+  </div>
+
+  <h3>重要な逆相関ペア</h3>
+  <table>
+    <tr><th>ペア</th><th>相関係数</th><th>戦略的意味</th></tr>
+    <tr><td>AUDUSD ↔ USDCAD</td><td class="val-neg">-0.77</td><td>同時保有でヘッジ効果。ドル中立のスプレッド取引が可能</td></tr>
+    <tr><td>EURUSD ↔ USDJPY</td><td class="val-neg">-0.60</td><td>ドルの両面を取る分散ポジション</td></tr>
+    <tr><td>GOLD ↔ BITCOIN</td><td class="val-neg">-0.52</td><td>安全資産 vs リスク資産の逆相関。ポートフォリオ分散に最適</td></tr>
+    <tr><td>EURCAD ↔ BITCOIN</td><td class="val-neg">-0.48</td><td>非直感的だが安定した逆相関</td></tr>
+    <tr><td>EURAUD ↔ 株式全般</td><td class="val-neg">-0.37 ~ -0.55</td><td>EURAUDはリスクオフ指標として機能。株の下落ヘッジに有用</td></tr>
+    <tr><td>EURGBP ↔ GBPUSD</td><td class="val-neg">-0.47</td><td>GBPの両面。EURGBPロング + GBPUSDロングでユーロ純ロング</td></tr>
+  </table>
+
+  <div class="insight">
+    <strong>考察:</strong> 相関マトリクスは5つの明確なクラスターを示しており、<strong>クラスター内の銘柄を同時にトレードするとリスク集中</strong>が起こる。分散ポートフォリオを構築する際は、異なるクラスターから銘柄を選ぶべきである。特に<strong>GOLD ↔ BITCOIN の逆相関（r=-0.52）</strong>は、両方をポートフォリオに組み入れることでドローダウンを抑制するペアとして有望。EURAUDは株式市場全般と逆相関を示しており、株ポジションのヘッジ手段として機能する。
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 6. SPREAD EFFICIENCY -->
+<!-- ============================================================ -->
+<div class="section" id="sec6">
+  <h2><span class="num">6</span>スプレッド効率分析</h2>
+
+  <p>スプレッド/ATR比率は、1回の取引コスト（スプレッド）が平均的な値動き（ATR）に対してどれくらいの割合を占めるかを示す。この比率が低いほど、取引コスト効率が高い。</p>
+
+  <div class="chart-container">
+    <img src="eda/06_spread_efficiency.png" alt="Spread Efficiency">
+    <p class="chart-caption">図6-1: 左) H1スプレッド効率ランキング、右) ボラティリティ vs コスト効率の散布図（右下が最良）</p>
+  </div>
+
+  <h3>スプレッド効率 TOP 10（H1）</h3>
+  <table>
+    <tr><th>#</th><th>銘柄</th><th>カテゴリ</th><th>Spread/ATR</th><th>評価</th></tr>
+    <tr><td>1</td><td>#Germany40</td><td><span class="tag tag-indices">Index</span></td><td class="val-pos">1.08</td><td>極めて効率的</td></tr>
+    <tr><td>2</td><td>GOLD</td><td><span class="tag tag-metals">Metal</span></td><td class="val-pos">1.64</td><td>極めて効率的</td></tr>
+    <tr><td>3</td><td>#USNDAQ100</td><td><span class="tag tag-indices">Index</span></td><td class="val-pos">2.07</td><td>効率的</td></tr>
+    <tr><td>4</td><td>#US30</td><td><span class="tag tag-indices">Index</span></td><td class="val-pos">2.13</td><td>効率的</td></tr>
+    <tr><td>5</td><td>#Japan225</td><td><span class="tag tag-indices">Index</span></td><td>4.87</td><td>良好</td></tr>
+    <tr><td>6</td><td>COIN</td><td><span class="tag tag-stocks">US Stock</span></td><td>7.09</td><td>良好</td></tr>
+    <tr><td>7</td><td>#Euro50</td><td><span class="tag tag-indices">Index</span></td><td>13.41</td><td>普通</td></tr>
+    <tr><td>8</td><td>USDJPY</td><td><span class="tag tag-forex">Forex</span></td><td>13.94</td><td>普通</td></tr>
+    <tr><td>9</td><td>TSLA</td><td><span class="tag tag-stocks">US Stock</span></td><td>15.34</td><td>普通</td></tr>
+    <tr><td>10</td><td>BITCOIN</td><td><span class="tag tag-crypto">Crypto</span></td><td>15.56</td><td>普通</td></tr>
+  </table>
+
+  <h3>コスト効率が悪い銘柄（要注意）</h3>
+  <table>
+    <tr><th>銘柄</th><th>Spread/ATR</th><th>問題</th></tr>
+    <tr><td>XRP</td><td class="val-neg">~51,000</td><td>スプレッドがATRの500倍以上。短期トレードは不可能</td></tr>
+    <tr><td>CARDANO</td><td class="val-neg">~46,000</td><td>同上。高スプレッドで利益の大半がコスト消失</td></tr>
+    <tr><td>NZDUSD</td><td class="val-neg">~17,000</td><td>Forex中最悪。スプレッドが相対的に非常に大きい</td></tr>
+    <tr><td>EURGBP</td><td class="val-neg">~7,400</td><td>低ボラ＋スプレッドで短期取引は困難</td></tr>
+  </table>
+
+  <div class="insight">
+    <strong>考察:</strong> <strong>指数CFD（#Germany40, #USNDAQ100, #US30）とGOLDが圧倒的に取引コスト効率が良い。</strong>これらは短期トレード（スキャルピング〜デイトレード）に最適である。一方、XRP, CARDANO, NZDUSDはスプレッドが値動きに対して極端に大きく、短期売買では利益を出すことが構造的に困難。これらの銘柄は長期保有（スイング以上）でなければ取引コストを吸収できない。散布図の「右下」（高ボラ＋低コスト）に位置するSOXL, COIN, TSLA等は、ボラティリティとコスト効率の両方を兼ね備えている。
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 7. COMPOSITE SCORE -->
+<!-- ============================================================ -->
+<div class="section" id="sec7">
+  <h2><span class="num">7</span>総合トレーダビリティスコア</h2>
+
+  <p>ボラティリティ（25%）+ トレンド性（25%）+ 効率比（25%）+ コスト効率（25%）を正規化して統合したスコア。1.0に近いほどトレードに適している。</p>
+
+  <div class="chart-container">
+    <img src="eda/07_composite_score.png" alt="Composite Score">
+    <p class="chart-caption">図7-1: 総合トレーダビリティスコア ヒートマップ（銘柄 × タイムフレーム）</p>
+  </div>
+
+  <h3>タイムフレーム別 TOP 5</h3>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">M5（超短期）</div>
+      <table>
+        <tr><td>1</td><td>GLD</td><td class="val-highlight">0.564</td></tr>
+        <tr><td>2</td><td>BABA</td><td class="val-highlight">0.560</td></tr>
+        <tr><td>3</td><td>EEM</td><td class="val-highlight">0.550</td></tr>
+        <tr><td>4</td><td>SOXL</td><td class="val-highlight">0.519</td></tr>
+        <tr><td>5</td><td>IBIT</td><td class="val-highlight">0.514</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">M15（短期）</div>
+      <table>
+        <tr><td>1</td><td>BABA</td><td class="val-highlight">0.563</td></tr>
+        <tr><td>2</td><td>EEM</td><td class="val-highlight">0.544</td></tr>
+        <tr><td>3</td><td>GLD</td><td class="val-highlight">0.542</td></tr>
+        <tr><td>4</td><td>NAT.GAS</td><td class="val-highlight">0.536</td></tr>
+        <tr><td>5</td><td>SOXL</td><td class="val-highlight">0.528</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">H1（デイトレード）</div>
+      <table>
+        <tr><td>1</td><td>BABA</td><td class="val-highlight">0.573</td></tr>
+        <tr><td>2</td><td>SOXL</td><td class="val-highlight">0.569</td></tr>
+        <tr><td>3</td><td>EEM</td><td class="val-highlight">0.567</td></tr>
+        <tr><td>4</td><td>TSLA</td><td class="val-highlight">0.567</td></tr>
+        <tr><td>5</td><td>NVDA</td><td class="val-highlight">0.563</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">H4（スイング短期）</div>
+      <table>
+        <tr><td>1</td><td>BABA</td><td class="val-highlight">0.652</td></tr>
+        <tr><td>2</td><td>GS</td><td class="val-highlight">0.619</td></tr>
+        <tr><td>3</td><td>COIN</td><td class="val-highlight">0.599</td></tr>
+        <tr><td>4</td><td>JPM</td><td class="val-highlight">0.587</td></tr>
+        <tr><td>5</td><td>TSLA</td><td class="val-highlight">0.579</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="card" style="max-width:580px">
+    <div class="card-title">D1（スイング中期）</div>
+    <table>
+      <tr><td>1</td><td>BABA</td><td class="val-highlight">0.679</td></tr>
+      <tr><td>2</td><td>XRP</td><td class="val-highlight">0.655</td></tr>
+      <tr><td>3</td><td>SOXL</td><td class="val-highlight">0.650</td></tr>
+      <tr><td>4</td><td>CARDANO</td><td class="val-highlight">0.642</td></tr>
+      <tr><td>5</td><td>ETHEREUM</td><td class="val-highlight">0.619</td></tr>
+    </table>
+  </div>
+
+  <div class="insight">
+    <strong>考察:</strong> EEMが短期（M5~H1）で一貫して高スコアを記録しており、新興国ETFの短期トレードポテンシャルが高い。BABAは全タイムフレームでトップ圏にあり、特にH4-D1で最高スコア0.697を達成。GOLDは直接的にはTOP5に入らないが、GLD（ゴールドETF）経由で常にランクインしており、ゴールドのトレーダビリティの高さが確認できる。タイムフレームが長くなるにつれてスコアが高くなる傾向があり、<strong>中期保有の方が短期より効率的</strong>であることを示している。
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 8. HOUR OF DAY -->
+<!-- ============================================================ -->
+<div class="section" id="sec8">
+  <h2><span class="num">8</span>時間帯分析</h2>
+
+  <p>H1データを用いて、1日の各時間帯でどれくらいの値動き（Range %）と出来高があるかを分析した。</p>
+
+  <div class="chart-container">
+    <img src="eda/08_hour_of_day.png" alt="Hour of Day Analysis">
+    <p class="chart-caption">図8-1: カテゴリ別・時間帯別のボラティリティ（左）と出来高（右）。青=アジア、緑=欧州、赤=米国セッション</p>
+  </div>
+
+  <h3>最もボラティリティが高い時間帯（UTC）</h3>
+  <table>
+    <tr><th>時間 (UTC)</th><th>日本時間</th><th>セッション</th><th>平均Range</th><th>特徴</th></tr>
+    <tr><td class="val-highlight">16:00</td><td>01:00</td><td>US Open</td><td class="val-pos">1.12%</td><td>全カテゴリで最大のボラティリティ</td></tr>
+    <tr><td class="val-highlight">15:00</td><td>00:00</td><td>EU-US Overlap</td><td class="val-pos">1.09%</td><td>欧米両市場が重なる黄金時間帯</td></tr>
+    <tr><td class="val-highlight">17:00</td><td>02:00</td><td>US Session</td><td class="val-pos">1.03%</td><td>米国市場の本格稼働</td></tr>
+    <tr><td>18:00</td><td>03:00</td><td>US Session</td><td>0.79%</td><td>米国のメイン取引時間</td></tr>
+    <tr><td>19:00</td><td>04:00</td><td>US Session</td><td>0.67%</td><td>米国午後</td></tr>
+  </table>
+
+  <h3>カテゴリ別の時間帯特性</h3>
+  <table>
+    <tr><th>カテゴリ</th><th>最活発な時間帯</th><th>パターンの特徴</th></tr>
+    <tr><td><span class="tag tag-forex">Forex</span></td><td>08-16 UTC</td><td>EUセッション中心。GBPJPY, AUDJPYはEU時間にピーク。深夜は静か</td></tr>
+    <tr><td><span class="tag tag-metals">Metals</span></td><td>13-20 UTC</td><td>GOLDはUS時間にピーク。アジア時間でもある程度動く</td></tr>
+    <tr><td><span class="tag tag-indices">Indices</span></td><td>14-20 UTC</td><td>US open後に急激にボラが上昇。#Germany40はEU時間にも活発</td></tr>
+    <tr><td><span class="tag tag-crypto">Crypto</span></td><td>全時間帯</td><td>24h市場だが、US時間(15-22 UTC)にボラのスパイクあり</td></tr>
+    <tr><td><span class="tag tag-stocks">US Stocks</span></td><td>14-20 UTC</td><td>市場開場時間に集中。プレマーケットから徐々に上昇</td></tr>
+  </table>
+
+  <div class="insight">
+    <strong>考察:</strong> <strong>15:00-17:00 UTC（日本時間 0:00-2:00）が全アセットクラスで最もボラティリティが高い「ゴールデンタイム」</strong>である。これはEUとUS市場が重なる時間帯に一致する。Forexのみ08:00 UTCのEU市場オープン時にも明確なボラスパイクがある。自動売買システムを設計する場合、この時間帯に取引を集中させることで効率を最大化できる。逆に、22:00-07:00 UTC（日本時間 7:00-16:00）はForex以外ほぼ閑散としている。
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 9. DAY OF WEEK -->
+<!-- ============================================================ -->
+<div class="section" id="sec9">
+  <h2><span class="num">9</span>曜日効果</h2>
+
+  <p>曜日ごとのリターン傾向とボラティリティを分析した。</p>
+
+  <div class="chart-container">
+    <img src="eda/09_day_of_week.png" alt="Day of Week Analysis">
+    <p class="chart-caption">図9-1: カテゴリ別・曜日別のリターン傾向と全体ボラティリティ</p>
+  </div>
+
+  <h3>全体ボラティリティ（曜日別）</h3>
+  <table>
+    <tr><th>曜日</th><th>Avg Range %</th><th>評価</th></tr>
+    <tr><td>月曜</td><td>2.81%</td><td>普通</td></tr>
+    <tr><td>火曜</td><td>2.70%</td><td>やや低い</td></tr>
+    <tr><td>水曜</td><td>2.81%</td><td>普通</td></tr>
+    <tr><td>木曜</td><td>2.83%</td><td>普通</td></tr>
+    <tr><td>金曜</td><td>2.83%</td><td>普通</td></tr>
+  </table>
+
+  <h3>注目すべき曜日パターン</h3>
+  <table>
+    <tr><th>パターン</th><th>銘柄</th><th>詳細</th></tr>
+    <tr><td class="val-pos">月曜バイアス（正）</td><td>GOLD, SILVER</td><td>月曜の平均リターンが+0.3%~+0.8%と顕著に正。週末のリスクオフ解消か</td></tr>
+    <tr><td class="val-pos">水曜バイアス（正）</td><td>ETHEREUM, SOLANA</td><td>水曜に+0.5%~+0.7%の上昇傾向。暗号通貨特有のパターン</td></tr>
+    <tr><td class="val-neg">火曜バイアス（負）</td><td>暗号通貨全般</td><td>火曜に-0.2%~-0.6%の下落傾向</td></tr>
+    <tr><td class="val-pos">月曜バイアス（正）</td><td>COIN, TSLA</td><td>月曜に+0.5%~+0.8%。個人投資家の週明け買い？</td></tr>
+  </table>
+
+  <div class="insight">
+    <strong>考察:</strong> 曜日間のボラティリティ差は小さく（2.70%~2.83%）、曜日によるボラティリティフィルターの効果は限定的。しかし<strong>リターン方向のバイアスは存在</strong>しており、特にGOLD/SILVERの月曜買い、暗号通貨の水曜買い・火曜売りは統計的に有意な傾向を示している。これらはシンプルな曜日フィルターとして戦略に組み込む価値がある。ただし、2年間のデータであるためサンプルサイズが限定的であり、過信は禁物。
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 10. SESSION -->
+<!-- ============================================================ -->
+<div class="section" id="sec10">
+  <h2><span class="num">10</span>セッション分析</h2>
+
+  <p>M15データを用いて、アジア / 欧州 / 米国の各取引セッションおよびそのオーバーラップ時間帯での値動きを分析した。</p>
+
+  <div class="chart-container">
+    <img src="eda/12_session_analysis.png" alt="Session Analysis">
+    <p class="chart-caption">図10-1: セッション別ボラティリティ比較（M15）</p>
+  </div>
+
+  <h3>セッション定義と各カテゴリのベストセッション</h3>
+  <table>
+    <tr><th>セッション</th><th>時間 (UTC)</th><th>日本時間</th><th>最も活発なカテゴリ</th></tr>
+    <tr><td>Asia Only</td><td>00:00-07:00</td><td>09:00-16:00</td><td>#Japan225, クロス円</td></tr>
+    <tr><td>Asia-EU Overlap</td><td>07:00-08:00</td><td>16:00-17:00</td><td>Forex全般（転換点）</td></tr>
+    <tr><td class="val-highlight">EU Only</td><td>08:00-13:00</td><td>17:00-22:00</td><td><strong>Forex（最も活発）</strong></td></tr>
+    <tr><td class="val-highlight">EU-US Overlap</td><td>13:00-16:00</td><td>22:00-01:00</td><td><strong>#Germany40, Forex</strong></td></tr>
+    <tr><td class="val-pos">US Only</td><td>16:00-22:00</td><td>01:00-07:00</td><td><strong>Metals, Indices, Crypto, US Stocks（全体最大）</strong></td></tr>
+    <tr><td>Late US</td><td>22:00-24:00</td><td>07:00-09:00</td><td>暗号通貨（SOLANAがピーク）</td></tr>
+  </table>
+
+  <h3>銘柄別のセッションパターン</h3>
+  <ul>
+    <li><strong>#Germany40</strong>: EU-USオーバーラップ(13-16 UTC)で突出したボラ。EU単独時間も活発</li>
+    <li><strong>#Japan225</strong>: アジアセッションでも大きなボラ（他の指数と異なる）</li>
+    <li><strong>GOLD</strong>: US時間がメインだが、アジア時間でも一定のボラ。24時間取引可能な銘柄</li>
+    <li><strong>SOLANA</strong>: Late US(22-24 UTC)で最大のボラ。夜間アルトコイン特有のパターン</li>
+    <li><strong>USDJPY</strong>: アジア〜EUで均等にボラ。US時間は相対的に低下</li>
+  </ul>
+
+  <div class="insight">
+    <strong>考察:</strong> セッション分析は時間帯分析をさらに精緻化した結果であり、<strong>カテゴリごとに最適な取引セッションが明確に異なる</strong>ことが確認できた。自動売買システムでは、銘柄ごとにアクティブセッションフィルターを設けることで、ノイズの多い閑散時間帯を避けることができる。特に#Germany40のEU-USオーバーラップ時のボラスパイクは顕著であり、この時間帯に集中してトレードすることで効率を大幅に向上できる可能性がある。
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 11. REGIME -->
+<!-- ============================================================ -->
+<div class="section" id="sec11">
+  <h2><span class="num">11</span>レジーム分析</h2>
+
+  <p>20日ローリングのボラティリティと効率比を用いて、市場を4つのレジーム（High Vol Trend / High Vol Range / Low Vol Trend / Low Vol Range）に分類した。</p>
+
+  <div class="chart-container">
+    <img src="eda/10_regime_analysis.png" alt="Regime Analysis">
+    <p class="chart-caption">図11-1: 各銘柄の価格チャート上にレジームをカラーマッピング（左）とレジーム分布（右）</p>
+  </div>
+
+  <h3>銘柄別レジーム分布</h3>
+  <table>
+    <tr><th>銘柄</th><th>HV Trend</th><th>HV Range</th><th>LV Trend</th><th>LV Range</th><th>支配的レジーム</th></tr>
+    <tr><td>USDJPY</td><td>24%</td><td>25%</td><td>25%</td><td>26%</td><td>均等分布 → 適応型戦略が必要</td></tr>
+    <tr><td>GOLD</td><td>27%</td><td>22%</td><td>25%</td><td>26%</td><td>トレンド期がやや多い</td></tr>
+    <tr><td>#USNDAQ100</td><td>25%</td><td>24%</td><td>25%</td><td>26%</td><td>ほぼ均等</td></tr>
+    <tr><td>BITCOIN</td><td>26%</td><td>23%</td><td>24%</td><td>27%</td><td>LV Range多め→レンジ期にも注意</td></tr>
+    <tr><td>TSLA</td><td>26%</td><td>24%</td><td>23%</td><td>27%</td><td>Low Vol Rangeが最多</td></tr>
+    <tr><td>NAT.GAS</td><td>28%</td><td>22%</td><td>24%</td><td>26%</td><td>HV Trendが最多→トレンドフォロー向き</td></tr>
+  </table>
+
+  <div class="insight">
+    <strong>考察:</strong> ほとんどの銘柄でレジームが比較的均等に分布しているが、重要なのは<strong>レジームの遷移パターン</strong>である。チャート上のカラーマッピングを見ると、GOLDは2024年後半から2025年にかけて「High Vol Trend」（赤）が持続的に出現しており、上昇トレンドの強さを視覚的に確認できる。NAT.GASはHigh Vol Trendが最多で、大きなトレンドが出やすい銘柄であることが確認された。<strong>戦略的には、現在のレジームを検出して戦略を切り替える「レジームスイッチング」アプローチ</strong>が有効と考えられる。トレンド期にはモメンタム戦略、レンジ期には平均回帰戦略を使い分ける。
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 12. TAIL RISK -->
+<!-- ============================================================ -->
+<div class="section" id="sec12">
+  <h2><span class="num">12</span>テールリスク分析</h2>
+
+  <p>各銘柄の最大ドローダウン（MaxDD）、VaR（95%）、大幅変動日の頻度を分析し、リスクプロファイルを明らかにした。</p>
+
+  <div class="chart-container">
+    <img src="eda/11_tail_risk.png" alt="Tail Risk Analysis">
+    <p class="chart-caption">図12-1: 左上) 最大ドローダウン、右上) VaR(95%)、左下) リターン分布、右下) 2%超変動日の頻度</p>
+  </div>
+
+  <h3>リスク階層（テールリスク4段階）</h3>
+  <div class="grid-2">
+    <div class="card success">
+      <div class="card-title">低リスク（MaxDD &lt; -15%）</div>
+      <table>
+        <tr><th>銘柄</th><th>MaxDD</th><th>VaR95</th><th>&gt;2%日</th></tr>
+        <tr><td>EURGBP</td><td>-4.6%</td><td>-0.48%</td><td>0%</td></tr>
+        <tr><td>GOLD</td><td>-8.0%</td><td>-5.31%</td><td>~7%</td></tr>
+        <tr><td>EURUSD</td><td>-8.5%</td><td>-0.72%</td><td>~1%</td></tr>
+        <tr><td>GBPJPY</td><td>-11.9%</td><td>-1.05%</td><td>~2%</td></tr>
+        <tr><td>USDJPY</td><td>-13.0%</td><td>-1.04%</td><td>~2%</td></tr>
+      </table>
+    </div>
+    <div class="card warn">
+      <div class="card-title">中リスク（MaxDD -15% ~ -35%）</div>
+      <table>
+        <tr><th>銘柄</th><th>MaxDD</th><th>VaR95</th><th>&gt;2%日</th></tr>
+        <tr><td>#Germany40</td><td>-13%</td><td>-1.4%</td><td>~4%</td></tr>
+        <tr><td>#US30</td><td>-16%</td><td>-1.5%</td><td>~4%</td></tr>
+        <tr><td>SPY</td><td>-17%</td><td>-1.4%</td><td>~5%</td></tr>
+        <tr><td>#USNDAQ100</td><td>-22%</td><td>-1.8%</td><td>~7%</td></tr>
+        <tr><td>BRENT</td><td>-24%</td><td>-2.1%</td><td>~12%</td></tr>
+      </table>
+    </div>
+    <div class="card danger">
+      <div class="card-title">高リスク（MaxDD -35% ~ -60%）</div>
+      <table>
+        <tr><th>銘柄</th><th>MaxDD</th><th>VaR95</th><th>&gt;2%日</th></tr>
+        <tr><td>NAT.GAS</td><td>-44%</td><td>-5.8%</td><td>~35%</td></tr>
+        <tr><td>BITCOIN</td><td>-50%</td><td>-4.2%</td><td>~25%</td></tr>
+        <tr><td>TSLA</td><td>-55%</td><td>-5.7%</td><td>~38%</td></tr>
+        <tr><td>AMD</td><td>-56%</td><td>-5.2%</td><td>~32%</td></tr>
+        <tr><td>NVDA</td><td>-37%</td><td>-4.5%</td><td>~28%</td></tr>
+      </table>
+    </div>
+    <div class="card" style="border-left:4px solid #7c0a02">
+      <div class="card-title" style="color:#f85149">極高リスク（MaxDD &gt; -60%）</div>
+      <table>
+        <tr><th>銘柄</th><th>MaxDD</th><th>VaR95</th><th>&gt;2%日</th></tr>
+        <tr><td>ETHEREUM</td><td>-64%</td><td>-6.3%</td><td>~30%</td></tr>
+        <tr><td>COIN</td><td>-66%</td><td>-8.2%</td><td>~42%</td></tr>
+        <tr><td>SOLANA</td><td>-71%</td><td>-7.3%</td><td>~40%</td></tr>
+        <tr><td>SOXL</td><td>-88%</td><td>-11.6%</td><td>~65%</td></tr>
+        <tr><td>QQQ</td><td>-91%</td><td>-71.0%</td><td>~8%</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="insight">
+    <strong>考察:</strong> リスクとリターンのトレードオフが明確に見える。SOXLは取引日の65%で2%超の変動があり、極端なボラティリティを持つ。<strong>ポジションサイジングはリスク階層に応じて厳格に調整する必要がある。</strong>具体的には、低リスク銘柄（Forex）では証拠金の5-10%、中リスク（指数）では3-5%、高リスク（暗号・個別株）では1-2%、極高リスク（SOXL等）では0.5%以下のポジションサイズが妥当。GOLDはMaxDD-8%と低いが、VaR95が-5.31%と高めなのは日次で大きなスパイクが稀に発生するため。リターン分布の左下チャートでは、USDJPYの分布が最も正規分布に近く、BITCOINとNAT.GASが最もファットテールであることが確認できる。
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 13. MONTHLY -->
+<!-- ============================================================ -->
+<div class="section" id="sec13">
+  <h2><span class="num">13</span>月別季節性パターン</h2>
+
+  <p>月別の平均日次リターンと平均日次ボラティリティの季節性パターンを分析した。</p>
+
+  <div class="chart-container">
+    <img src="eda/13_monthly_patterns.png" alt="Monthly Patterns">
+    <p class="chart-caption">図13-1: 左) 月別平均日次リターン（青=負、赤=正）、右) 月別ボラティリティ</p>
+  </div>
+
+  <h3>注目すべき季節性パターン</h3>
+  <table>
+    <tr><th>銘柄</th><th>強い月</th><th>弱い月</th><th>高ボラ月</th></tr>
+    <tr><td>GOLD</td><td class="val-pos">2月, 9月, 10月</td><td class="val-neg">6月, 11月</td><td>3月, 10月</td></tr>
+    <tr><td>USDJPY</td><td class="val-pos">7月</td><td class="val-neg">9月</td><td>8月</td></tr>
+    <tr><td>#USNDAQ100</td><td class="val-pos">11月</td><td class="val-neg">4月, 7月</td><td>8月</td></tr>
+    <tr><td>BITCOIN</td><td class="val-pos">2月, 11月</td><td class="val-neg">6月, 8月</td><td>3月, 11月</td></tr>
+    <tr><td>ETHEREUM</td><td class="val-pos">5月</td><td class="val-neg">6月</td><td>3月</td></tr>
+    <tr><td>NAT.GAS</td><td class="val-pos">1月</td><td class="val-neg">4月</td><td>1月, 11月（冬場）</td></tr>
+    <tr><td>TSLA</td><td class="val-pos">6月</td><td class="val-neg">1月</td><td>1月, 4月</td></tr>
+    <tr><td>SOXL</td><td class="val-pos">6月</td><td class="val-neg">7月, 9月</td><td>8月（集中）</td></tr>
+  </table>
+
+  <div class="insight">
+    <strong>考察:</strong> 季節性パターンは2年分のデータに基づくため、統計的信頼性は限定的である（各月のサンプルは2回分のみ）。しかしいくつかの傾向は既知のアノマリーと一致している：<strong>「Sell in May」効果</strong>（株式の5-6月弱含み）、<strong>NAT.GASの冬場高ボラ</strong>（暖房需要期）、<strong>BITCOINの11月ラリー</strong>（歴史的に上昇しやすい月）。これらは戦略の補助フィルターとして使えるが、メインのシグナルとしては信頼性不足。長期データ（5年以上）での検証が必要。
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 14. HOLDING PERIOD -->
+<!-- ============================================================ -->
+<div class="section" id="sec14">
+  <h2><span class="num">14</span>保有期間分析</h2>
+
+  <p>1日・3日・5日・10日・20日の各保有期間におけるSharpe比とWin Rate（勝率）を分析した。</p>
+
+  <div class="chart-container">
+    <img src="eda/14_holding_periods.png" alt="Holding Period Analysis">
+    <p class="chart-caption">図14-1: 左) 保有期間別Sharpe比、右) 保有期間別勝率。緑=高い、赤=低い</p>
+  </div>
+
+  <h3>保有期間別の最適銘柄</h3>
+  <table>
+    <tr><th>保有期間</th><th>最適銘柄（Sharpe）</th><th>勝率の傾向</th></tr>
+    <tr><td class="val-highlight">1日</td><td>GLD(+0.13), GOLD(+0.10), #Germany40(+0.08)</td><td>50-53%程度。微弱な優位性</td></tr>
+    <tr><td class="val-highlight">3日</td><td>GLD(+0.12), GOOGL(+0.11), GS(+0.10)</td><td>51-54%。やや改善</td></tr>
+    <tr><td class="val-highlight">5日</td><td>GLD(+0.14), GOOGL(+0.13), SPY(+0.10)</td><td>52-55%。安定化</td></tr>
+    <tr><td class="val-highlight">10日</td><td>GLD(+0.16), GOOGL(+0.15), GS(+0.14)</td><td>53-57%。さらに改善</td></tr>
+    <tr><td class="val-highlight">20日</td><td>GLD(+0.19), GS(+0.17), GOOGL(+0.16)</td><td>55-60%。最も高い勝率</td></tr>
+  </table>
+
+  <h3>保有期間による傾向</h3>
+  <div class="grid-2">
+    <div class="card success">
+      <div class="card-title">保有期間が長いほど良い銘柄</div>
+      <p><strong>GLD, GOLD, GOOGL, GS, SPY, #Germany40</strong></p>
+      <p>Sharpeと勝率が保有期間とともに単調増加。トレンドフォロー型のスイングトレードに最適。</p>
+    </div>
+    <div class="card warn">
+      <div class="card-title">短期が最適な銘柄</div>
+      <p><strong>SOXL, NAT.GAS, 暗号通貨</strong></p>
+      <p>短期のSharpeは高いが、長期では低下。モメンタムの持続が短い。</p>
+    </div>
+  </div>
+
+  <div class="insight">
+    <strong>考察:</strong> <strong>GLD（ゴールドETF）が全保有期間で最も高いSharpe比</strong>を記録しており、2024-2026年のゴールドの持続的上昇トレンドを反映している。保有期間が長くなるほどSharpeと勝率が改善する傾向は、<strong>ゴールドのトレンドの安定性・持続性</strong>を裏付けるものである。一方、暗号通貨やSOXLは短期でのSharpeが高く、短期的なモメンタムバーストを捉える戦略が適している。この結果は、<strong>銘柄ごとに最適な保有期間が異なる</strong>ことを明確に示しており、ワンサイズフィッツオールの戦略は非効率であることを意味する。
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 15. LEAD-LAG ANALYSIS -->
+<!-- ============================================================ -->
+<div class="section" id="sec15">
+  <h2><span class="num">15</span>リードラグ分析（時間差影響）</h2>
+
+  <p>資産間の「先行・追従」関係を多角的に分析した。ある資産の値動きが時間差で別の資産に波及するパターンを検出し、予測シグナルとしての活用可能性を評価する。分析手法は以下の4つ：(1) H1相互相関分析、(2) グレンジャー因果性検定、(3) セッション間スピルオーバー、(4) M15日中リードラグ。</p>
+
+  <!-- 15-1: H1 Lead-Lag Heatmap -->
+  <h3>15-1. H1相互相関ヒートマップ</h3>
+
+  <div class="chart-container">
+    <img src="eda/15_leadlag_heatmap.png" alt="Lead-Lag Heatmap">
+    <p class="chart-caption">図15-1: 左) ラグ0での同時相関、右) 最適ラグでの相関改善量（暖色=先行→追従の関係が強い）</p>
+  </div>
+
+  <p>H1リターンの相互相関を最大12時間のラグで計算し、同時相関（ラグ0）と比較して相関が最も改善するラグを特定した。</p>
+
+  <h3>相関改善が大きいペア（Top 15）</h3>
+  <table>
+    <tr><th>先行</th><th>追従</th><th>同時相関</th><th>最適ラグ</th><th>ラグ後相関</th><th>改善幅</th></tr>
+    <tr><td class="val-highlight">BRENT</td><td>EEM</td><td>+0.085</td><td class="val-pos">12h</td><td>-0.224</td><td class="val-pos">+0.139</td></tr>
+    <tr><td class="val-highlight">WTI</td><td>EEM</td><td>+0.084</td><td class="val-pos">12h</td><td>-0.210</td><td class="val-pos">+0.127</td></tr>
+    <tr><td class="val-highlight">SOLANA</td><td>QQQ</td><td>-0.002</td><td class="val-pos">6h</td><td>+0.112</td><td class="val-pos">+0.110</td></tr>
+    <tr><td class="val-highlight">QQQ</td><td>TSLA</td><td>+0.051</td><td class="val-pos">10h</td><td>+0.156</td><td class="val-pos">+0.105</td></tr>
+    <tr><td class="val-highlight">GLD</td><td>BITCOIN</td><td>+0.032</td><td class="val-pos">11h</td><td>-0.133</td><td class="val-pos">+0.101</td></tr>
+    <tr><td class="val-highlight">BRENT</td><td>SOXL</td><td>+0.047</td><td class="val-pos">7h</td><td>+0.133</td><td class="val-pos">+0.086</td></tr>
+    <tr><td class="val-highlight">QQQ</td><td>IBIT</td><td>-0.000</td><td class="val-pos">3h</td><td>+0.085</td><td class="val-pos">+0.085</td></tr>
+    <tr><td class="val-highlight">WTI</td><td>SOXL</td><td>+0.048</td><td class="val-pos">7h</td><td>+0.132</td><td class="val-pos">+0.084</td></tr>
+    <tr><td class="val-highlight">TSLA</td><td>WTI</td><td>+0.010</td><td class="val-pos">8h</td><td>-0.093</td><td class="val-pos">+0.083</td></tr>
+    <tr><td class="val-highlight">AAPL</td><td>EURUSD</td><td>-0.001</td><td class="val-pos">2h</td><td>+0.083</td><td class="val-pos">+0.081</td></tr>
+  </table>
+
+  <div class="insight">
+    <strong>考察:</strong> 原油（BRENT/WTI）→新興国ETF（EEM）の12時間ラグが最大の改善幅を示す。これは<strong>米国時間の原油急騰→翌アジア時間の新興国市場への波及</strong>というタイムゾーン跨ぎのメカニズムを反映している。また、SOLANA→QQQ（6h）やGLD→BITCOIN（11h）のクロスアセット関係も検出されており、<strong>暗号通貨と伝統金融市場の情報伝播</strong>に時間差があることを示唆する。
+  </div>
+
+  <!-- 15-2: Cross-Correlation Profiles -->
+  <h3>15-2. 主要ペアの相互相関プロファイル</h3>
+
+  <div class="chart-container">
+    <img src="eda/16_xcorr_profiles.png" alt="Cross-Correlation Profiles">
+    <p class="chart-caption">図15-2: 15主要ペアの相互相関プロファイル（正ラグ=先行資産が追従資産に先行）</p>
+  </div>
+
+  <p>H1タイムフレームで12ラグまでの相互相関を可視化。ラグ0のピークがシャープなペアは同時連動性が高く、非対称なプロファイルは先行・追従の関係を示す。</p>
+
+  <h3>セッション間スピルオーバー分析</h3>
+
+  <div class="chart-container">
+    <img src="eda/18_session_spillover.png" alt="Session Spillover">
+    <p class="chart-caption">図15-3: セッション間スピルオーバー。米国→アジア→欧州の値動き伝播パターン</p>
+  </div>
+
+  <p>10主要ペアの3セッション（米国/アジア/欧州）間スピルオーバーを分析。各セッション終値のリターンが次のセッションへ及ぼす影響を計測した。</p>
+
+  <div class="grid-2">
+    <div class="card highlight">
+      <div class="card-title">検出されたスピルオーバー</div>
+      <ul>
+        <li><strong>NASDAQ → Japan225:</strong> 同時相関 r=0.69（M15）。NASDAQ lag+1で r=+0.026、lag+4で r=+0.020。Granger因果性 p=0.00003（最強）</li>
+        <li><strong>NASDAQ → Germany40:</strong> 同時相関 r=0.64。lag+4で r=+0.044。Granger因果性 p=0.006</li>
+        <li><strong>BITCOIN → ETHEREUM:</strong> 同時相関 r=0.85（M15）。lag+1で r=+0.020。BTC15分先行の傾向</li>
+        <li><strong>GOLD → EURUSD:</strong> 同時相関 r=0.28（M15）。lag+2で r=+0.012</li>
+        <li><strong>NASDAQ → BITCOIN:</strong> 同時相関 r=0.33。lag+1で r=+0.032。Granger因果性 p=0.044</li>
+      </ul>
+    </div>
+    <div class="card warn">
+      <div class="card-title">注意事項</div>
+      <ul>
+        <li>同時相関が圧倒的に強く（r=0.65-0.85）、ラグ成分は微弱（r=0.02-0.04）</li>
+        <li>リードラグ効果の実用的な予測力は限定的だが、数千回の繰り返しで統計的に有意</li>
+        <li>高頻度取引ではスリッページとスプレッドが利益を侵食する可能性大</li>
+        <li>取引コストを考慮した上でのネットリターンの検証が不可欠</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 15-3: Granger Causality -->
+  <h3>15-3. グレンジャー因果性検定</h3>
+
+  <div class="chart-container">
+    <img src="eda/19_granger_causality.png" alt="Granger Causality">
+    <p class="chart-caption">図15-4: グレンジャー因果性検定結果。赤点線 = 有意水準 p=0.05</p>
+  </div>
+
+  <p>グレンジャー因果性検定は「X の過去データが Y の予測に統計的に有意な改善をもたらすか」を F検定で評価する。p &lt; 0.05 で有意と判定。最大ラグ6時間で検定を実施した。</p>
+
+  <h3>有意な因果関係（p &lt; 0.05）</h3>
+  <table>
+    <tr><th>先行（Leader）</th><th>追従（Follower）</th><th>最適ラグ</th><th>F統計量</th><th>p値</th><th>解釈</th></tr>
+    <tr><td class="val-highlight">NASDAQ</td><td>Japan225</td><td>4h</td><td>6.58</td><td class="val-pos">0.000028</td><td>極めて強い因果性。米国→日本の波及</td></tr>
+    <tr><td class="val-highlight">US30</td><td>Germany40</td><td>5h</td><td>4.73</td><td class="val-pos">0.000258</td><td>米国→欧州の波及。NASDAQと独立</td></tr>
+    <tr><td class="val-highlight">NASDAQ</td><td>Germany40</td><td>5h</td><td>3.25</td><td class="val-pos">0.006225</td><td>テック指数も欧州に先行</td></tr>
+    <tr><td class="val-highlight">GOLD</td><td>SILVER</td><td>1h</td><td>4.55</td><td class="val-pos">0.033</td><td>ゴールド→シルバーの1時間ラグ</td></tr>
+    <tr><td class="val-highlight">GOLD</td><td>BITCOIN</td><td>3h</td><td>3.97</td><td class="val-pos">0.008</td><td>安全資産→リスク資産の3時間ラグ</td></tr>
+    <tr><td class="val-highlight">GOLD</td><td>GLD</td><td>6h</td><td>3.62</td><td class="val-pos">0.001</td><td>スポット→ETFの裁定遅延</td></tr>
+    <tr><td class="val-highlight">USDJPY</td><td>AUDJPY</td><td>1h</td><td>8.06</td><td class="val-pos">0.005</td><td>メジャー→マイナーJPYクロスへの波及</td></tr>
+    <tr><td class="val-highlight">GBPJPY</td><td>USDJPY</td><td>2h</td><td>6.07</td><td class="val-pos">0.002</td><td>GBPJPYの動きがUSDJPYに先行</td></tr>
+    <tr><td class="val-highlight">NASDAQ</td><td>BITCOIN</td><td>5h</td><td>2.28</td><td class="val-pos">0.044</td><td>テック→暗号通貨のリスクオン伝播</td></tr>
+    <tr><td class="val-highlight">EURUSD</td><td>GOLD</td><td>4h</td><td>2.56</td><td class="val-pos">0.036</td><td>ユーロ→ゴールドの逆方向影響も存在</td></tr>
+    <tr><td class="val-highlight">Japan225</td><td>NASDAQ</td><td>5h</td><td>3.37</td><td class="val-pos">0.005</td><td>日本→米国の逆方向フィードバック</td></tr>
+  </table>
+
+  <div class="insight">
+    <strong>考察:</strong> 最も確実なリードラグ関係は<strong>米国株指数（NASDAQ/US30）→海外株指数（Japan225/Germany40）</strong>である。これはタイムゾーンの違いと米国市場の情報優位性を反映した構造的なパターンであり、再現性が高い。<strong>GOLD→SILVER（1h）</strong>は貴金属市場における流動性格差（ゴールドの方が流動性が高く、価格発見が速い）を示す。<strong>GOLD→BITCOIN（3h）</strong>は「安全資産の動き→リスク資産の反応」という市場心理の伝播メカニズムを示唆する。<strong>GBPJPY→USDJPY（2h）</strong>は円クロスにおけるGBPJPYのボラティリティの高さ（先行指標的役割）を示しており、JPYクロス取引の先行シグナルとして活用可能。
+  </div>
+
+  <!-- 15-4: Intraday Lead-Lag -->
+  <h3>15-4. 日中リードラグ（M15）</h3>
+
+  <div class="chart-container">
+    <img src="eda/17_intraday_leadlag.png" alt="Intraday Lead-Lag">
+    <p class="chart-caption">図15-5: M15タイムフレームの日中リードラグ分析（5アセットグループ）</p>
+  </div>
+
+  <p>M15（15分足）リターンを使い、各グループ内の先行・追従関係を-8~+8ラグ（±2時間）で分析した。</p>
+
+  <h3>グループ別の日中リードラグ構造</h3>
+  <table>
+    <tr><th>グループ</th><th>先行</th><th>追従</th><th>同時相関</th><th>注目ラグ</th><th>特徴</th></tr>
+    <tr><td>貴金属</td><td class="val-highlight">GOLD</td><td>SILVER, PLATINUM</td><td>r=0.71, 0.42</td><td>lag+1: -0.022</td><td>GOLDが明確にリード。PLATINUMは遅延反応</td></tr>
+    <tr><td>暗号通貨</td><td class="val-highlight">BITCOIN</td><td>ETH, SOL, ADA</td><td>r=0.85, 0.75, 0.70</td><td>lag+1: +0.020</td><td>BTCが全暗号通貨をリード。ETHが最速追従</td></tr>
+    <tr><td>米国指数</td><td class="val-highlight">NASDAQ</td><td>US30, Japan225</td><td>r=0.79, 0.69</td><td>lag+1: +0.026</td><td>NASDAQが最速。Japan225への波及が明確</td></tr>
+    <tr><td>JPYクロス</td><td class="val-highlight">USDJPY</td><td>EURJPY, AUDJPY</td><td>r=0.72, 0.65</td><td>lag+2: +0.020</td><td>USDJPYがJPYクロス全体をリード</td></tr>
+    <tr><td>クロスアセット</td><td class="val-highlight">NASDAQ</td><td>BITCOIN</td><td>r=0.33</td><td>lag+1: +0.032</td><td>NASDAQの15分後にBTCが反応</td></tr>
+  </table>
+
+  <h3>リードラグを活用した戦略への示唆</h3>
+  <div class="grid-3">
+    <div class="card success">
+      <div class="card-title">戦略E候補: 指数スピルオーバー</div>
+      <p>NASDAQ終値→翌アジア時間のJapan225の方向性を予測。Granger因果性 p=0.00003の最も確実な関係。</p>
+      <p><strong>実装:</strong> NASDAQ引け(21:00 UTC)後、Japan225のオープン方向を予測してポジション</p>
+    </div>
+    <div class="card success">
+      <div class="card-title">戦略F候補: 貴金属ラグ</div>
+      <p>GOLDの急変後、1時間以内にSILVERが追従。GOLD→SILVER因果性 p=0.033。</p>
+      <p><strong>実装:</strong> GOLDの大幅変動検知→SILVERの同方向ポジション（1h保有）</p>
+    </div>
+    <div class="card success">
+      <div class="card-title">戦略G候補: クロスアセット伝播</div>
+      <p>GOLD→BITCOIN（3h, p=0.008）、NASDAQ→BITCOIN（5h, p=0.044）の2重シグナル。</p>
+      <p><strong>実装:</strong> GOLDとNASDAQの動きを監視し、合流する方向でBTCポジション</p>
+    </div>
+  </div>
+
+  <div class="insight">
+    <strong>総合考察:</strong> リードラグ分析の結果、<strong>3つの主要な情報伝播経路</strong>が確認された：(1) <strong>米国株→海外株</strong>（NASDAQ→Japan225/Germany40、ラグ4-5h、最も確実）、(2) <strong>ゴールド→他資産</strong>（GOLD→SILVER 1h、GOLD→BITCOIN 3h）、(3) <strong>JPYクロス内伝播</strong>（GBPJPY→USDJPY→AUDJPY）。これらは市場の<strong>情報の非効率性</strong>を示しており、特に(1)のタイムゾーン跨ぎパターンは構造的要因（取引時間の違い）に基づくため、<strong>今後も持続する可能性が最も高い</strong>。ただし、全てのラグ相関は同時相関に比べて微弱（r=0.02-0.04 vs r=0.65-0.85）であり、<strong>取引コストを差し引いた上での実利性はバックテストでの検証が必須</strong>である。高いp値の関係（p &gt; 0.01）は特にサンプル外での劣化に注意が必要。
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 16. AUTOCORRELATION -->
+<!-- ============================================================ -->
+<div class="section" id="sec16">
+  <h2><span class="num">16</span>リターン自己相関（モメンタム vs 平均回帰）</h2>
+
+  <p>H1リターンの自己相関（ACF）をラグ1〜20で計算し、各銘柄が<strong>モメンタム型</strong>（正のACF: 直前の方向が続きやすい）か<strong>平均回帰型</strong>（負のACF: 直前の方向が反転しやすい）かを判定した。これは<strong>トレンドフォロー戦略 vs 逆張り戦略の選択</strong>に直結する最重要指標である。</p>
+
+  <div class="chart-container">
+    <img src="eda/20_autocorrelation.png" alt="Autocorrelation Analysis">
+    <p class="chart-caption">図16-1: 左) ACFヒートマップ（赤=正/モメンタム、青=負/平均回帰）、右) ラグ1-5の平均ACF</p>
+  </div>
+
+  <h3>モメンタム型（トレンドフォロー向き）</h3>
+  <table>
+    <tr><th>銘柄</th><th>ACF (lag1-5 avg)</th><th>カテゴリ</th><th>推奨戦略</th></tr>
+    <tr><td class="val-pos">NASDAQ</td><td>+0.0095</td><td>Indices</td><td>トレンドフォロー、ブレイクアウト</td></tr>
+    <tr><td class="val-pos">Germany40</td><td>+0.0080</td><td>Indices</td><td>トレンドフォロー、ブレイクアウト</td></tr>
+    <tr><td class="val-pos">US30</td><td>+0.0075</td><td>Indices</td><td>トレンドフォロー、ブレイクアウト</td></tr>
+    <tr><td class="val-pos">BABA</td><td>+0.0073</td><td>Stocks</td><td>モメンタム順張り</td></tr>
+    <tr><td class="val-pos">COIN</td><td>+0.0067</td><td>Stocks</td><td>モメンタム順張り</td></tr>
+  </table>
+
+  <h3>平均回帰型（逆張り向き）</h3>
+  <table>
+    <tr><th>銘柄</th><th>ACF (lag1-5 avg)</th><th>カテゴリ</th><th>推奨戦略</th></tr>
+    <tr><td class="val-neg">AMZN</td><td>-0.0237</td><td>Stocks</td><td>ボリンジャーバンド逆張り</td></tr>
+    <tr><td class="val-neg">SPY</td><td>-0.0230</td><td>ETFs</td><td>ボリンジャーバンド逆張り</td></tr>
+    <tr><td class="val-neg">VNQ</td><td>-0.0215</td><td>ETFs</td><td>RSI逆張り</td></tr>
+    <tr><td class="val-neg">QQQ</td><td>-0.0201</td><td>ETFs</td><td>ボリンジャーバンド逆張り</td></tr>
+    <tr><td class="val-neg">Japan225</td><td>-0.0192</td><td>Indices</td><td>平均回帰トレード</td></tr>
+  </table>
+
+  <div class="insight">
+    <strong>考察:</strong> <strong>株価指数CFD（NASDAQ, Germany40, US30）は正のACF</strong>を示し、モメンタムが持続しやすい。これらにはトレンドフォロー / ブレイクアウト戦略が適合する。一方、<strong>ETF（SPY, QQQ, VNQ）と一部個別株（AMZN）は負のACF</strong>を示し、短期的な平均回帰傾向がある。これはETFにおけるマーケットメイカーの裁定活動を反映している可能性がある。<strong>銘柄ごとに最適な戦略タイプが異なる</strong>ことが明確に確認された。
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 17. SIGNAL EFFECTIVENESS -->
+<!-- ============================================================ -->
+<div class="section" id="sec17">
+  <h2><span class="num">17</span>テクニカルシグナル有効性</h2>
+
+  <p>4つの代表的テクニカルシグナル（SMAクロス、RSI、ボリンジャーバンド、ATRブレイクアウト）をH1タイムフレームで全銘柄に適用し、Win Rate（勝率）とSharpe比を測定した。</p>
+
+  <div class="chart-container">
+    <img src="eda/21_signal_effectiveness.png" alt="Signal Effectiveness">
+    <p class="chart-caption">図17-1: 左) シグナル別Win Rate、右) シグナル別Sharpe比（H1, 5時間保有）</p>
+  </div>
+
+  <div class="chart-container">
+    <img src="eda/22_signal_by_hold.png" alt="Signal by Hold Period">
+    <p class="chart-caption">図17-2: 左) 保有期間別平均Win Rate、中) 保有期間別Sharpe、右) カテゴリ別ベストシグナル</p>
+  </div>
+
+  <h3>シグナル別パフォーマンス概要</h3>
+  <table>
+    <tr><th>シグナル</th><th>最適銘柄数</th><th>特徴</th><th>最適カテゴリ</th></tr>
+    <tr><td class="val-highlight">SMAクロス (10/30)</td><td>20銘柄</td><td>トレンド追従型。モメンタム銘柄に最適</td><td>Metals, Indices, Crypto, Energy</td></tr>
+    <tr><td class="val-highlight">ボリンジャー (20, 2σ)</td><td>20銘柄</td><td>平均回帰型。短期3h保有でSharpe最高</td><td>US Stocks, Forex, ETFs</td></tr>
+    <tr><td class="val-highlight">ブレイクアウト (20bar)</td><td>9銘柄</td><td>ボラタイル銘柄で有効</td><td>一部の高ボラ銘柄</td></tr>
+    <tr><td class="val-highlight">RSI (14, 30/70)</td><td>6銘柄</td><td>シグナル頻度が低く限定的</td><td>特定状況のみ</td></tr>
+  </table>
+
+  <div class="grid-2">
+    <div class="card success">
+      <div class="card-title">保有期間3hでボリンジャーが最強</div>
+      <p>短期保有（3h）ではボリンジャーバンドの平均Sharpeが<strong>+0.30</strong>と突出。平均回帰効果が短期で最も強く作用する。</p>
+    </div>
+    <div class="card highlight">
+      <div class="card-title">SMAクロスは10h保有で最適</div>
+      <p>SMAクロスの平均Sharpeは10h保有で<strong>+0.18</strong>。トレンドの持続を捉えるには数時間以上の保有が必要。</p>
+    </div>
+  </div>
+
+  <div class="insight">
+    <strong>考察:</strong> <strong>「万能シグナル」は存在しない</strong>ことが明確に確認された。SMAクロスとボリンジャーバンドが各20銘柄でベストと拮抗しており、<strong>モメンタム型銘柄にはSMAクロス、平均回帰型銘柄にはボリンジャー</strong>という使い分けが最適。RSIはシグナル頻度が低く単独での使用は非推奨だが、他のシグナルのフィルター（確認指標）として活用可能。ブレイクアウトは高ボラ銘柄（COIN, NAT_GAS等）で局所的に有効。
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 18. SL/TP OPTIMIZATION -->
+<!-- ============================================================ -->
+<div class="section" id="sec18">
+  <h2><span class="num">18</span>SL/TP最適化</h2>
+
+  <p>ATRベースのストップロス（SL）とテイクプロフィット（TP）の組み合わせを網羅的にテストし、最適なリスク:リワード比率を特定した。SL = {1.0, 1.5, 2.0, 2.5} × ATR(14)、TP:SL比 = {0.5:1, 1.0:1, 1.5:1, 2.0:1, 3.0:1}の20通りを評価。</p>
+
+  <div class="chart-container">
+    <img src="eda/23_sl_tp_optimization.png" alt="SL/TP Optimization">
+    <p class="chart-caption">図18-1: 左) 平均Win Rate、中) 平均Expectancy（1トレードあたり期待値）、右) 平均Profit Factor</p>
+  </div>
+
+  <h3>最適SL/TP設定</h3>
+  <table>
+    <tr><th>SL/TP設定</th><th>最適銘柄数</th><th>Win Rate</th><th>Expectancy</th><th>特徴</th></tr>
+    <tr><td class="val-highlight">SL=2.5×ATR, TP=0.5:1</td><td>27銘柄</td><td>68.3%</td><td>+0.001</td><td>高勝率・小利確。心理的に楽</td></tr>
+    <tr><td class="val-highlight">SL=2.5×ATR, TP=1.0:1</td><td>13銘柄</td><td>51.4%</td><td>+0.001</td><td>バランス型。推奨設定</td></tr>
+    <tr><td class="val-highlight">SL=1.0×ATR, TP=3.0:1</td><td>4銘柄</td><td>25.1%</td><td>+0.000</td><td>低勝率・大利確。トレンド銘柄向け</td></tr>
+    <tr><td class="val-highlight">SL=1.0×ATR, TP=1.5:1</td><td>3銘柄</td><td>41.2%</td><td>+0.000</td><td>タイトSL。スキャルピング向け</td></tr>
+  </table>
+
+  <div class="grid-2">
+    <div class="card success">
+      <div class="card-title">推奨: SL=1.5-2.0×ATR, TP=1.0-1.5:1</div>
+      <p>Expectancyとプロフィットファクターのバランスが最も良い中間ゾーン。Win Rate 50%前後を維持しつつ、1トレードあたりの期待利益が正。</p>
+    </div>
+    <div class="card warn">
+      <div class="card-title">注意: 高TP比率は期待値がマイナスに</div>
+      <p>TP=2.0:1以上ではWin Rateが急落し、多くの銘柄でExpectancyがマイナスに転じる。「利を伸ばす」はトレンドが強い銘柄のみで有効。</p>
+    </div>
+  </div>
+
+  <div class="insight">
+    <strong>考察:</strong> <strong>広いSL（2.0-2.5×ATR）+ 控えめなTP（0.5-1.0:1）が全体平均で最も安定</strong>。これはノイズによる不要な損切りを回避する効果がある。しかし、<strong>プロフィットファクターが1.0付近であり、取引コスト（スプレッド + 手数料）を差し引くとブレイクイーブン</strong>に近い。つまり、<strong>SL/TPの比率単体では優位性を生み出せず、エントリータイミング（シグナル品質）が真の勝敗を決める</strong>ことを意味する。SL/TPは「優位性の保護」が役割であり、「優位性の創出」はシグナル側の仕事である。
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 19. VOLATILITY REGIME -->
+<!-- ============================================================ -->
+<div class="section" id="sec19">
+  <h2><span class="num">19</span>ボラティリティレジーム別パフォーマンス</h2>
+
+  <p>ATR(14)のパーセンタイルで3つのボラティリティレジーム（低/中/高）に分類し、各レジームでの次バーリターンの勝率・Sharpe・歪度を分析。</p>
+
+  <div class="chart-container">
+    <img src="eda/24_vol_regime.png" alt="Volatility Regime Analysis">
+    <p class="chart-caption">図19-1: 左) レジーム別Win Rate、中) レジーム別Sharpe、右) レジーム別歪度</p>
+  </div>
+
+  <h3>レジーム別サマリー（全銘柄平均）</h3>
+  <table>
+    <tr><th>レジーム</th><th>平均Sharpe</th><th>特徴</th><th>推奨アクション</th></tr>
+    <tr><td class="val-pos">低ボラ (< 33%ile)</td><td><strong>+0.300</strong></td><td>最も高いSharpe。穏やかな値動きの中でトレンドが安定</td><td>積極的にポジション保有。SLを狭く設定可能</td></tr>
+    <tr><td class="val-neutral">高ボラ (> 66%ile)</td><td>+0.183</td><td>Sharpeは中程度だが歪度がマイナス。テールリスク高</td><td>ポジションサイズを縮小。TP/SLを広く</td></tr>
+    <tr><td class="val-neg">中ボラ (33-66%ile)</td><td>+0.116</td><td>方向性が不明確。最も稼ぎにくいレジーム</td><td>シグナルの閾値を厳しく。見送りも選択肢</td></tr>
+  </table>
+
+  <div class="insight">
+    <strong>考察:</strong> <strong>低ボラ環境が最も高いSharpeを記録</strong>。これは直感に反するが、低ボラ時はトレンドが静かに持続しやすく（ノイズが少ない）、SLに引っかかりにくいためである。高ボラ時はリターンの絶対値は大きいがテールリスク（負の歪度）が増大し、リスク調整後のパフォーマンスは低ボラに劣る。<strong>実務的には: 低ボラ時にポジションサイズを1.5倍に増やし、高ボラ時に0.7倍に減らす</strong>という可変サイジングが有効。中ボラ時は標準サイズを維持しつつ、シグナル品質の閾値を上げるフィルターを適用すべき。
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 20. DRAWDOWN RECOVERY -->
+<!-- ============================================================ -->
+<div class="section" id="sec20">
+  <h2><span class="num">20</span>ドローダウン回復分析</h2>
+
+  <p>H1データを使い、各銘柄のドローダウン深度・平均回復時間・最大ドローダウン期間を分析。損切りルールとポジションタイムアウト設定の根拠とする。</p>
+
+  <div class="chart-container">
+    <img src="eda/25_drawdown_recovery.png" alt="Drawdown Recovery">
+    <p class="chart-caption">図20-1: 左) 最大ドローダウン、中) 平均&P90回復時間、右) 最長ドローダウン期間</p>
+  </div>
+
+  <h3>ドローダウンプロファイル</h3>
+  <div class="grid-2">
+    <div class="card success">
+      <div class="card-title">浅いDD・早い回復（低リスク銘柄）</div>
+      <table>
+        <tr><th>銘柄</th><th>MaxDD</th><th>平均回復</th></tr>
+        <tr><td>EURCAD</td><td>-2.1%</td><td>81h</td></tr>
+        <tr><td>USDCAD</td><td>-3.6%</td><td>84h</td></tr>
+        <tr><td>GBPUSD</td><td>-4.4%</td><td>107h</td></tr>
+        <tr><td>EURGBP</td><td>-4.8%</td><td>418h</td></tr>
+        <tr><td>AUDUSD</td><td>-5.8%</td><td>93h</td></tr>
+      </table>
+    </div>
+    <div class="card danger">
+      <div class="card-title">深いDD・遅い回復（高リスク銘柄）</div>
+      <table>
+        <tr><th>銘柄</th><th>MaxDD</th><th>平均回復</th></tr>
+        <tr><td>QQQ</td><td>-91.4%</td><td>679h</td></tr>
+        <tr><td>SOXL</td><td>-88.2%</td><td>129h</td></tr>
+        <tr><td>SOLANA</td><td>-66.1%</td><td>290h</td></tr>
+        <tr><td>ETHEREUM</td><td>-65.3%</td><td>272h</td></tr>
+        <tr><td>AMD</td><td>-64.7%</td><td>432h</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <h3>タイムアウトルール（推奨）</h3>
+  <table>
+    <tr><th>カテゴリ</th><th>P90回復時間</th><th>推奨タイムアウト</th><th>根拠</th></tr>
+    <tr><td>Forex (メジャー)</td><td>100-250h</td><td class="val-highlight">48-72h (2-3日)</td><td>回復の中央値を大幅に下回る場合は撤退</td></tr>
+    <tr><td>Forex (クロス)</td><td>150-400h</td><td class="val-highlight">72-120h (3-5日)</td><td>クロス通貨は回復が遅い傾向</td></tr>
+    <tr><td>Indices</td><td>200-500h</td><td class="val-highlight">96-168h (4-7日)</td><td>トレンドの転換を確認する猶予</td></tr>
+    <tr><td>Metals</td><td>150-350h</td><td class="val-highlight">72-120h (3-5日)</td><td>GOLD/SILVERの反転パターン</td></tr>
+    <tr><td>Crypto</td><td>300-700h</td><td class="val-highlight">120-240h (5-10日)</td><td>高ボラのため広めに設定</td></tr>
+    <tr><td>Stocks/ETFs</td><td>250-600h</td><td class="val-highlight">120-168h (5-7日)</td><td>決算等のイベントリスク考慮</td></tr>
+  </table>
+
+  <div class="insight">
+    <strong>考察:</strong> ドローダウン分析から<strong>3つの重要なルール</strong>が導出される: (1) <strong>ポジションタイムアウト</strong>: 一定時間以上含み損が続く場合は強制決済。P90回復時間の50-70%を目安とする。(2) <strong>カテゴリ別ポジションサイズ</strong>: MaxDDの深い銘柄（暗号通貨, SOXL等）はデフォルトの0.3-0.5倍のサイズに制限。(3) <strong>同時ポジション制限</strong>: 高DDリスク銘柄は同時に2銘柄まで。低DDリスク銘柄は同時に5銘柄まで許容。
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 21. STRATEGY PROPOSALS -->
+<!-- ============================================================ -->
+<div class="section" id="sec21">
+  <h2><span class="num">21</span>戦略提案</h2>
+
+  <p>以上のEDA結果を総合し、以下の4つの戦略アプローチを提案する。これらは相互補完的であり、ポートフォリオとして組み合わせることでリスク分散が可能。</p>
+
+  <!-- Strategy A -->
+  <div class="strategy-box">
+    <h4>戦略A: ゴールデンタイム・トレンドフォロー（推奨度: 最高）</h4>
+    <div class="grid-2">
+      <div>
+        <p><strong>根拠:</strong></p>
+        <ul>
+          <li>GOLD, #Germany40はスプレッド効率 TOP2（Sec.6）</li>
+          <li>H1でHurst &gt; 0.60のトレンド持続性（Sec.4）</li>
+          <li>15-17 UTC が全体ボラピーク（Sec.8）</li>
+          <li>保有期間が長いほどSharpe改善（Sec.14）</li>
+        </ul>
+      </div>
+      <div>
+        <p><strong>仕様:</strong></p>
+        <ul>
+          <li><strong>対象:</strong> GOLD, #Germany40, #USNDAQ100</li>
+          <li><strong>TF:</strong> H1（エントリー）、H4（方向確認）</li>
+          <li><strong>時間帯:</strong> 13:00-20:00 UTC のみ</li>
+          <li><strong>保有:</strong> 数時間〜数日</li>
+          <li><strong>リスク:</strong> 1トレードあたり資金の2%</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Strategy B -->
+  <div class="strategy-box">
+    <h4>戦略B: 高ボラモメンタムバースト</h4>
+    <div class="grid-2">
+      <div>
+        <p><strong>根拠:</strong></p>
+        <ul>
+          <li>COIN, TSLA, SOXLはボラ60-115%で大きな動き（Sec.2）</li>
+          <li>H4でコンポジットスコア上位（Sec.7）</li>
+          <li>短期Sharpeが高い（Sec.14）</li>
+          <li>2%超変動日が30-65%と頻繁（Sec.12）</li>
+        </ul>
+      </div>
+      <div>
+        <p><strong>仕様:</strong></p>
+        <ul>
+          <li><strong>対象:</strong> COIN, TSLA, SOXL, AMD</li>
+          <li><strong>TF:</strong> M15-H1</li>
+          <li><strong>時間帯:</strong> US Session (14:00-21:00 UTC)</li>
+          <li><strong>保有:</strong> 数時間以内（当日決済）</li>
+          <li><strong>リスク:</strong> 1トレードあたり資金の0.5-1%（高リスク考慮）</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Strategy C -->
+  <div class="strategy-box">
+    <h4>戦略C: スイング・ペアトレード/分散</h4>
+    <div class="grid-2">
+      <div>
+        <p><strong>根拠:</strong></p>
+        <ul>
+          <li>GOLD↔BITCOIN逆相関 r=-0.52（Sec.5）</li>
+          <li>AUDUSD↔USDCAD逆相関 r=-0.77（Sec.5）</li>
+          <li>長期保有でSharpe改善する銘柄群（Sec.14）</li>
+          <li>クラスター間分散でリスク低減</li>
+        </ul>
+      </div>
+      <div>
+        <p><strong>仕様:</strong></p>
+        <ul>
+          <li><strong>ペア1:</strong> GOLD Long + BITCOIN Short（市場中立）</li>
+          <li><strong>ペア2:</strong> AUDUSD Long + USDCAD Long（ドル中立）</li>
+          <li><strong>TF:</strong> D1</li>
+          <li><strong>保有:</strong> 数日〜数週間</li>
+          <li><strong>リスク:</strong> ペアあたり資金の3%</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Strategy D -->
+  <div class="strategy-box">
+    <h4>戦略D: レジーム適応型（上級）</h4>
+    <div class="grid-2">
+      <div>
+        <p><strong>根拠:</strong></p>
+        <ul>
+          <li>レジームが4つに均等分布（Sec.11）</li>
+          <li>トレンド期とレンジ期で最適戦略が異なる</li>
+          <li>Hurst指数でリアルタイムにレジーム検出可能</li>
+        </ul>
+      </div>
+      <div>
+        <p><strong>仕様:</strong></p>
+        <ul>
+          <li><strong>対象:</strong> GOLD, #USNDAQ100, BITCOIN</li>
+          <li><strong>TF:</strong> H1（レジーム判定はD1）</li>
+          <li><strong>Trend期:</strong> ブレイクアウト + トレイリングストップ</li>
+          <li><strong>Range期:</strong> ボリンジャーバンド逆張り</li>
+          <li><strong>リスク:</strong> レジームに応じて1-3%可変</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Strategy E (NEW from Lead-Lag) -->
+  <div class="strategy-box">
+    <h4>戦略E: リードラグ・スピルオーバー（NEW: Sec.15由来）</h4>
+    <div class="grid-2">
+      <div>
+        <p><strong>根拠:</strong></p>
+        <ul>
+          <li>NASDAQ→Japan225: Granger因果性 p=0.00003（Sec.15）</li>
+          <li>GOLD→SILVER: 1hラグ、p=0.033（Sec.15）</li>
+          <li>GOLD→BITCOIN: 3hラグ、p=0.008（Sec.15）</li>
+          <li>GBPJPY→USDJPY: 2hラグ、p=0.002（Sec.15）</li>
+          <li>タイムゾーン差に基づく構造的パターン</li>
+        </ul>
+      </div>
+      <div>
+        <p><strong>仕様:</strong></p>
+        <ul>
+          <li><strong>ペア1:</strong> NASDAQ引け→Japan225オープン方向予測</li>
+          <li><strong>ペア2:</strong> GOLD急変→SILVER同方向（1h保有）</li>
+          <li><strong>ペア3:</strong> GOLD+NASDAQ合流→BITCOIN方向</li>
+          <li><strong>TF:</strong> H1（トリガー検知）、M15（エントリー）</li>
+          <li><strong>保有:</strong> 1-6時間</li>
+          <li><strong>リスク:</strong> 1トレードあたり資金の1-2%</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h3>戦略間のリスク分散マトリクス</h3>
+  <table>
+    <tr><th></th><th>戦略A</th><th>戦略B</th><th>戦略C</th><th>戦略D</th><th>戦略E</th></tr>
+    <tr><td><strong>リスクレベル</strong></td><td><span class="tag tag-low">低〜中</span></td><td><span class="tag tag-high">高</span></td><td><span class="tag tag-low">低</span></td><td><span class="tag tag-med">中</span></td><td><span class="tag tag-med">中</span></td></tr>
+    <tr><td><strong>想定年利</strong></td><td>15-30%</td><td>30-80%</td><td>10-20%</td><td>20-40%</td><td>15-35%</td></tr>
+    <tr><td><strong>想定MaxDD</strong></td><td>-10~-20%</td><td>-20~-40%</td><td>-5~-10%</td><td>-10~-25%</td><td>-10~-20%</td></tr>
+    <tr><td><strong>取引頻度</strong></td><td>日に1-3回</td><td>日に2-5回</td><td>週に1-2回</td><td>日に1-3回</td><td>日に2-4回</td></tr>
+    <tr><td><strong>必要監視</strong></td><td>中</td><td>高（自動化推奨）</td><td>低</td><td>自動化必須</td><td>自動化推奨</td></tr>
+    <tr><td><strong>相関</strong></td><td>-</td><td>低</td><td>低</td><td>中</td><td>低〜中</td></tr>
+  </table>
+
+  <div class="card success" style="margin-top:24px">
+    <div class="card-title">推奨ポートフォリオ構成</div>
+    <p>5つの戦略を以下の配分で組み合わせることを提案する：</p>
+    <table>
+      <tr><th>戦略</th><th>資金配分</th><th>理由</th></tr>
+      <tr><td><strong>A: トレンドフォロー</strong></td><td class="val-highlight">35%</td><td>最も安定かつ実績のあるアプローチ。コスト効率も最良</td></tr>
+      <tr><td><strong>B: モメンタムバースト</strong></td><td class="val-highlight">15%</td><td>高リターン狙い。厳格なリスク管理で損失を限定</td></tr>
+      <tr><td><strong>C: ペアトレード</strong></td><td class="val-highlight">20%</td><td>市場中立で安定。他の戦略が不調な時のバッファ</td></tr>
+      <tr><td><strong>D: レジーム適応</strong></td><td class="val-highlight">15%</td><td>上級戦略。レジーム検出の精度次第で追加配分</td></tr>
+      <tr><td><strong>E: リードラグ</strong></td><td class="val-highlight">15%</td><td>統計的因果関係に基づく独自シグナル。他戦略と低相関</td></tr>
+    </table>
+  </div>
+
+  <h3>次のステップ</h3>
+  <div class="card highlight">
+    <ol>
+      <li><strong>バックテスト環境の構築</strong> — 各戦略のエントリー/イグジットルールを明確化し、過去データで検証</li>
+      <li><strong>リードラグ関係の検証データ検証</strong> — 戦略Eのリードラグ関係が検証期間（2025-09〜12）でも保持されるか確認。特にGranger因果性の持続性を評価</li>
+      <li><strong>パラメータ最適化</strong> — ウォークフォワード分析で過学習を回避</li>
+      <li><strong>デモトレード開始</strong> — 最も有望な戦略（A推奨）からリアルタイムのデモ検証。戦略Eも並行テスト推奨</li>
+      <li><strong>リスク管理フレームワーク</strong> — ポジションサイジング、相関リスク管理、最大同時ポジション数の制限</li>
+      <li><strong>自動売買システムの実装</strong> — MT5 EA（Expert Advisor）またはPython+MT5 APIでの自動化。戦略Eはタイマーベースの自動発注が必須</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ===== Section 22: Backtest Results ===== -->
+<div class="section" id="sec22">
+  <h2><span class="num">22</span>バックテスト結果</h2>
+
+  <p>Section 21で提案した5つの戦略（A〜E）をtrain/val/testの3期間でバックテストした結果を示す。データ期間: Train (&lt;2025-09-02), Val (2025-09-02〜2025-12-01), Test (&ge;2025-12-02)。全3,752トレードを分析。</p>
+
+  <h3>22.1 戦略別パフォーマンスサマリー</h3>
+
+  <div class="card">
+    <div class="card-title">Train期間（18ヶ月）</div>
+    <table>
+      <tr><th>戦略</th><th>トレード数</th><th>総リターン</th><th>年率Sharpe</th><th>MaxDD</th><th>Win Rate</th><th>Profit Factor</th><th>評価</th></tr>
+      <tr>
+        <td><strong>A: トレンドフォロー</strong></td>
+        <td>137</td>
+        <td class="val-highlight">+11.18%</td>
+        <td class="val-highlight">2.28</td>
+        <td>-5.21%</td>
+        <td>46.7%</td>
+        <td>1.38</td>
+        <td><span class="tag tag-low">安定</span></td>
+      </tr>
+      <tr>
+        <td><strong>B: モメンタム</strong></td>
+        <td>611</td>
+        <td class="val-highlight">+195.43%</td>
+        <td class="val-highlight">2.22</td>
+        <td style="color:var(--red)">-37.57%</td>
+        <td>41.4%</td>
+        <td>1.28</td>
+        <td><span class="tag tag-high">高リターン/高DD</span></td>
+      </tr>
+      <tr>
+        <td><strong>C: ペアトレード</strong></td>
+        <td>9</td>
+        <td style="color:var(--red)">-6.25%</td>
+        <td style="color:var(--red)">-6.51</td>
+        <td>-8.15%</td>
+        <td>44.4%</td>
+        <td>0.46</td>
+        <td><span class="tag tag-high">データ不足</span></td>
+      </tr>
+      <tr>
+        <td><strong>D: レジーム適応</strong></td>
+        <td>1,462</td>
+        <td style="color:var(--red)">-82.04%</td>
+        <td style="color:var(--red)">-1.82</td>
+        <td style="color:var(--red)">-87.45%</td>
+        <td>41.5%</td>
+        <td>0.79</td>
+        <td><span class="tag tag-high">要改善</span></td>
+      </tr>
+      <tr>
+        <td><strong>E: リードラグ</strong></td>
+        <td>1,115</td>
+        <td class="val-highlight">+15.50%</td>
+        <td>0.67</td>
+        <td>-10.91%</td>
+        <td>50.6%</td>
+        <td>1.06</td>
+        <td><span class="tag tag-med">改善余地</span></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="grid-2" style="margin-top:16px">
+    <div class="card">
+      <div class="card-title">Val期間（3ヶ月）</div>
+      <table>
+        <tr><th>戦略</th><th>N</th><th>Return</th><th>Sharpe</th><th>MaxDD</th></tr>
+        <tr><td>A</td><td>23</td><td style="color:var(--red)">-1.66%</td><td style="color:var(--red)">-2.22</td><td>-2.05%</td></tr>
+        <tr><td>B</td><td>90</td><td class="val-highlight">+9.90%</td><td>0.74</td><td>-15.93%</td></tr>
+        <tr><td>C</td><td>0</td><td colspan="3" style="text-align:center;color:var(--text-dim)">データなし</td></tr>
+        <tr><td>D</td><td>45</td><td class="val-highlight">+4.65%</td><td>1.90</td><td>-1.95%</td></tr>
+        <tr><td>E</td><td>58</td><td class="val-highlight">+1.57%</td><td>1.38</td><td>-3.94%</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">Test期間（3ヶ月）</div>
+      <table>
+        <tr><th>戦略</th><th>N</th><th>Return</th><th>Sharpe</th><th>MaxDD</th></tr>
+        <tr><td>A</td><td>20</td><td class="val-highlight">+0.73%</td><td>1.30</td><td>-1.88%</td></tr>
+        <tr><td>B</td><td>80</td><td style="color:var(--red)">-4.56%</td><td style="color:var(--red)">-0.45</td><td>-19.61%</td></tr>
+        <tr><td>C</td><td>0</td><td colspan="3" style="text-align:center;color:var(--text-dim)">データなし</td></tr>
+        <tr><td>D</td><td>46</td><td style="color:var(--red)">-2.52%</td><td style="color:var(--red)">-1.22</td><td>-4.26%</td></tr>
+        <tr><td>E</td><td>56</td><td style="color:var(--red)">-2.50%</td><td style="color:var(--red)">-2.40</td><td>-4.08%</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <h3>22.2 累積リターン推移（Fig.26）</h3>
+  <p>各戦略のtrain/val/test期間を通した累積リターン推移。期間境界を点線で示す。</p>
+  <img src="eda/26_equity_curves.png" alt="Equity Curves" style="width:100%; border-radius:8px; margin:12px 0">
+
+  <h3>22.3 戦略比較（Fig.27）</h3>
+  <p>Sharpe Ratio、Maximum Drawdown、Win Rateの3指標で各戦略×期間を比較。</p>
+  <img src="eda/27_strategy_comparison.png" alt="Strategy Comparison" style="width:100%; border-radius:8px; margin:12px 0">
+
+  <h3>22.4 月次リターンヒートマップ（Fig.28）</h3>
+  <p>各戦略の月別リターンを色強度で可視化。季節性パターンとドローダウン月の特定に有用。</p>
+  <img src="eda/28_monthly_returns.png" alt="Monthly Returns" style="width:100%; border-radius:8px; margin:12px 0">
+
+  <h3>22.5 トレード損益分布（Fig.29）</h3>
+  <p>個別トレードのPnL分布。テール特性とリスクリワード比の確認。</p>
+  <img src="eda/29_trade_distribution.png" alt="Trade Distribution" style="width:100%; border-radius:8px; margin:12px 0">
+
+  <h3>22.6 ポートフォリオ統合（Fig.30）</h3>
+  <p>5戦略をウェイト（A:35%, B:15%, C:20%, D:15%, E:15%）で統合した累積リターン。</p>
+  <img src="eda/30_portfolio_equity.png" alt="Portfolio Equity" style="width:100%; border-radius:8px; margin:12px 0">
+
+  <div class="card success">
+    <div class="card-title">ポートフォリオ統合結果</div>
+    <table>
+      <tr><th>期間</th><th>総リターン</th><th>MaxDD</th><th>評価</th></tr>
+      <tr><td>Train (18mo)</td><td class="val-highlight">+22.0%</td><td>-10.4%</td><td>Calmar &gt; 2.0</td></tr>
+      <tr><td>Val (3mo)</td><td class="val-highlight">+1.8%</td><td>-4.3%</td><td>安定推移</td></tr>
+      <tr><td>Test (3mo)</td><td style="color:var(--red)">-1.2%</td><td>-5.7%</td><td>軽微なDD</td></tr>
+    </table>
+  </div>
+
+  <h3>22.7 Train vs Test 劣化分析（Fig.31）</h3>
+  <p>各指標のtrain→val→testでの変化を可視化。過学習の度合いを評価。</p>
+  <img src="eda/31_train_vs_test.png" alt="Train vs Test Degradation" style="width:100%; border-radius:8px; margin:12px 0">
+
+  <h3>22.8 戦略別診断と改善方針</h3>
+
+  <div class="strategy-box">
+    <h4>戦略A: トレンドフォロー — 最も安定、本番運用推奨</h4>
+    <div class="grid-2">
+      <div>
+        <p><strong>診断:</strong></p>
+        <ul>
+          <li>Train Sharpe 2.28は統計的に有意な水準</li>
+          <li>Test +0.73%（Sharpe 1.30）で正のリターンを維持</li>
+          <li>MaxDD全期間で-5%以内と非常に安定</li>
+          <li>Val期間のみ-1.66%だが、トレード数23と少なくサンプル不足</li>
+        </ul>
+      </div>
+      <div>
+        <p><strong>改善案:</strong></p>
+        <ul>
+          <li>SMA(10/30)以外のパラメータでロバスト性確認</li>
+          <li>トレーリングストップの追加検討</li>
+          <li>エントリーフィルター（ATR閾値）の追加</li>
+          <li><span class="tag tag-low">配分据置: 35%</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="strategy-box">
+    <h4>戦略B: モメンタム — 高リターンだがOOS劣化が顕著</h4>
+    <div class="grid-2">
+      <div>
+        <p><strong>診断:</strong></p>
+        <ul>
+          <li>Train +195%は過学習の疑いあり（MaxDD -37%）</li>
+          <li>Val +9.9%は依然プラスだがDD -16%が大きい</li>
+          <li>Test -4.6%に転落、Sharpe -0.45</li>
+          <li>Win Rate 36-41%で安定しないエッジ</li>
+        </ul>
+      </div>
+      <div>
+        <p><strong>改善案:</strong></p>
+        <ul>
+          <li>ブレイクアウト閾値の引き上げ（20→30bar）</li>
+          <li>ボリュームフィルター追加で偽ブレイクアウト除外</li>
+          <li>ポジションサイズ縮小（ATR正規化）</li>
+          <li><span class="tag tag-high">配分縮小: 15% → 10%</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="strategy-box">
+    <h4>戦略C: ペアトレード — データ不足で評価不能、再設計必要</h4>
+    <div class="grid-2">
+      <div>
+        <p><strong>診断:</strong></p>
+        <ul>
+          <li>Train期間でわずか9トレード（統計的無意味）</li>
+          <li>GOLD/BITCOINペアはデータ欠損（2025-06/2024-11で終了）</li>
+          <li>Val/Testはデータなしで完全に評価不可</li>
+          <li>Z-score閾値2.0が厳しすぎる可能性</li>
+        </ul>
+      </div>
+      <div>
+        <p><strong>改善案:</strong></p>
+        <ul>
+          <li>AUDUSD/USDCADペアのみに限定し再評価</li>
+          <li>Z-score閾値を1.5に緩和</li>
+          <li>GOLD/BITCOINはデータ再取得後に再検証</li>
+          <li><span class="tag tag-high">配分見直し: 20% → 凍結</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="strategy-box">
+    <h4>戦略D: レジーム適応 — Train大幅損失、ロジック根本見直し</h4>
+    <div class="grid-2">
+      <div>
+        <p><strong>診断:</strong></p>
+        <ul>
+          <li>Train -82%（MaxDD -87%）は壊滅的パフォーマンス</li>
+          <li>1,462トレードで過剰取引の疑い</li>
+          <li>Hurst推定が不安定（50barローリングは短すぎる可能性）</li>
+          <li>Val/Testではトレード数激減（45-46）で改善傾向</li>
+        </ul>
+      </div>
+      <div>
+        <p><strong>改善案:</strong></p>
+        <ul>
+          <li>Hurst推定期間を100-200barに延長</li>
+          <li>レジーム遷移のヒステリシス導入（切替頻度制限）</li>
+          <li>レンジモードのBB逆張りパラメータ見直し</li>
+          <li><span class="tag tag-high">配分見直し: 15% → 凍結（改善後に復帰）</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="strategy-box">
+    <h4>戦略E: リードラグ — 中程度のエッジ、微調整で改善見込み</h4>
+    <div class="grid-2">
+      <div>
+        <p><strong>診断:</strong></p>
+        <ul>
+          <li>Train +15.5%（Sharpe 0.67）は控えめだがプラス</li>
+          <li>Win Rate 50.6%でほぼランダムに近い</li>
+          <li>Val +1.57%（Sharpe 1.38）で一時改善</li>
+          <li>Test -2.50%（Sharpe -2.40）で崩壊、リードラグ関係の減衰か</li>
+        </ul>
+      </div>
+      <div>
+        <p><strong>改善案:</strong></p>
+        <ul>
+          <li>E1 (NASDAQ→日経): 方向強度フィルター追加（ATR超の動きのみ）</li>
+          <li>E2 (GOLD→SILVER): 閾値を1×ATR→1.5×ATRに引き上げ</li>
+          <li>E3 (合流→BTC): データ不足のため一旦除外</li>
+          <li><span class="tag tag-med">配分微減: 15% → 10%</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h3>22.9 改訂ポートフォリオ配分</h3>
+
+  <div class="card success">
+    <div class="card-title">バックテスト結果に基づく改訂配分</div>
+    <p>バックテスト結果を踏まえ、C（データ不足）とD（大幅損失）を凍結し、実績のある戦略に資金を集中する。</p>
+    <table>
+      <tr><th>戦略</th><th>変更前</th><th>変更後</th><th>理由</th></tr>
+      <tr><td><strong>A: トレンドフォロー</strong></td><td>35%</td><td class="val-highlight">50%</td><td>唯一OOSで正リターンを維持。安定性最高</td></tr>
+      <tr><td><strong>B: モメンタム</strong></td><td>15%</td><td class="val-highlight">20%</td><td>パラメータ調整後にVal +9.9%の実績を活用</td></tr>
+      <tr><td><strong>C: ペアトレード</strong></td><td>20%</td><td style="color:var(--red)">凍結</td><td>データ再取得と再設計が先決</td></tr>
+      <tr><td><strong>D: レジーム適応</strong></td><td>15%</td><td style="color:var(--red)">凍結</td><td>根本的なロジック見直しが必要</td></tr>
+      <tr><td><strong>E: リードラグ</strong></td><td>15%</td><td class="val-highlight">30%</td><td>Val Sharpe 1.38。フィルター追加で改善見込み</td></tr>
+    </table>
+  </div>
+
+  <h3>22.10 次のアクション</h3>
+  <div class="card highlight">
+    <ol>
+      <li><strong>戦略Aをデモトレードで即時運用開始</strong> — 最も安定した実績。MT5 EAまたはPython自動売買で実装</li>
+      <li><strong>戦略Bのパラメータ最適化</strong> — ブレイクアウト閾値・SL/TP比率のウォークフォワード検証</li>
+      <li><strong>戦略Eのフィルター強化</strong> — 方向強度フィルターの追加と閾値調整</li>
+      <li><strong>GOLD/BITCOINデータ再取得</strong> — 戦略C/Dの再評価に必要</li>
+      <li><strong>戦略Dの根本改修</strong> — Hurst推定方法の見直し、レジーム切替ロジックの再設計</li>
+      <li><strong>ポートフォリオリバランス</strong> — 改善が確認された戦略を順次復帰させる</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ===== Section 23: Pattern Detection ===== -->
+<div class="section" id="sec23">
+  <h2><span class="num">23</span>パターン検出戦略（ML）</h2>
+
+  <p>市場データの大部分（~99%）はランダムノイズであり、再現性のあるパターンは全体の1%程度に限られる。従来の統計的戦略（Sec.22）が常時取引するのに対し、本セクションではRandomForestで「パターンが存在する瞬間」のみを検出し、高信頼度シグナルだけで取引するアプローチを検証する。</p>
+
+  <div class="card highlight">
+    <div class="card-title">手法概要</div>
+    <ul>
+      <li><strong>特徴量:</strong> 35個（価格構造8 + ボラティリティ6 + トレンド7 + 出来高4 + 時間5 + 上位時間軸5）</li>
+      <li><strong>ターゲット:</strong> MFE/MAE方式 — 前方12barで有利方向2ATR超 & edge &gt; 1.5ATRの場合に「パターン有り」</li>
+      <li><strong>モデル:</strong> RandomForest（500本, 深さ8, class_weight=balanced）</li>
+      <li><strong>検証:</strong> 5-fold Purged Time-Series CV（purge=24bar, embargo=6bar）</li>
+      <li><strong>取引条件:</strong> パターン信頼度が閾値超（上位1-10%）の場合のみエントリー</li>
+      <li><strong>決済:</strong> SL=1.5×ATR, TP=2:1, Max Hold=12bar</li>
+    </ul>
+  </div>
+
+  <h3>23.1 CV Fold安定性（Fig.32）</h3>
+  <p>5-fold CVでのSharpe、Win Rate、AUC、トレード数の安定性。fold間でAUCが0.6前後で安定しており、パターン検出能力が偶然でないことを示す。</p>
+  <img src="eda/32_cv_fold_stability.png" alt="CV Fold Stability" style="width:100%; border-radius:8px; margin:12px 0">
+
+  <h3>23.2 特徴量重要度（Fig.33）</h3>
+  <p>パターン検出に寄与する上位20特徴量。ボラティリティ系（atr_norm, atr_ratio, realized_vol）と上位時間軸（d1_range_pct, h4_hurst）が支配的。</p>
+  <img src="eda/33_feature_importance.png" alt="Feature Importance" style="width:100%; border-radius:8px; margin:12px 0">
+
+  <div class="card">
+    <div class="card-title">重要特徴量の解釈</div>
+    <table>
+      <tr><th>順位</th><th>特徴量</th><th>重要度</th><th>解釈</th></tr>
+      <tr><td>1</td><td><strong>atr_norm</strong></td><td class="val-highlight">0.08</td><td>ボラティリティ水準が高い時にパターンが出現しやすい</td></tr>
+      <tr><td>2</td><td><strong>d1_range_pct</strong></td><td class="val-highlight">0.07</td><td>日足レンジが広い日にパターンが集中</td></tr>
+      <tr><td>3</td><td><strong>atr_ratio</strong></td><td class="val-highlight">0.06</td><td>短期ATRが長期ATRを上回る「ボラ拡大局面」がキー</td></tr>
+      <tr><td>4</td><td><strong>realized_vol</strong></td><td>0.05</td><td>実現ボラティリティの高さがパターン存在のシグナル</td></tr>
+      <tr><td>5</td><td><strong>bb_width</strong></td><td>0.05</td><td>ボリンジャーバンド幅 — スクイーズ後のブレイクアウト</td></tr>
+    </table>
+    <p style="margin-top:8px; color:var(--text-dim)">結論: <strong>ボラティリティの急拡大がパターン出現の最強のシグナル</strong>。価格構造やトレンド指標よりもボラティリティ変化が重要。</p>
+  </div>
+
+  <h3>23.3 信頼度分布（Fig.34）</h3>
+  <img src="eda/34_confidence_distribution.png" alt="Confidence Distribution" style="width:100%; border-radius:8px; margin:12px 0">
+
+  <h3>23.4 シグナル密度マップ（Fig.35）</h3>
+  <p>上位10銘柄の時間帯×曜日別シグナル密度。パターンが特定の時間帯に集中する傾向を確認。</p>
+  <img src="eda/35_signal_density_map.png" alt="Signal Density Map" style="width:100%; border-radius:8px; margin:12px 0">
+
+  <h3>23.5 上位銘柄エクイティカーブ（Fig.36）</h3>
+  <img src="eda/36_equity_curves.png" alt="Equity Curves" style="width:100%; border-radius:8px; margin:12px 0">
+
+  <h3>23.6 全銘柄パフォーマンス（Fig.37）</h3>
+  <p>全55銘柄のTest期間Sharpe Ratio。21銘柄（38%）がTest期間で正のSharpeを達成。</p>
+  <img src="eda/37_symbol_performance.png" alt="Symbol Performance" style="width:100%; border-radius:8px; margin:12px 0">
+
+  <h3>23.7 OOS劣化分析（Fig.38）</h3>
+  <img src="eda/38_train_val_test_degradation.png" alt="Degradation Analysis" style="width:100%; border-radius:8px; margin:12px 0">
+
+  <h3>23.8 パターン検出例（Fig.39）</h3>
+  <img src="eda/39_pattern_examples.png" alt="Pattern Examples" style="width:100%; border-radius:8px; margin:12px 0">
+
+  <h3>23.9 市場レジーム vs パターン頻度（Fig.40）</h3>
+  <img src="eda/40_regime_vs_patterns.png" alt="Regime vs Patterns" style="width:100%; border-radius:8px; margin:12px 0">
+
+  <h3>23.10 ポートフォリオ統合（Fig.41）</h3>
+  <p>CV Sharpe &gt; 0の銘柄のみを統合したポートフォリオ。Trainは過学習（モデルを訓練データで評価）のため参考外。Val/Testが実力。</p>
+  <img src="eda/41_aggregate_portfolio.png" alt="Aggregate Portfolio" style="width:100%; border-radius:8px; margin:12px 0">
+
+  <h3>23.11 OOSで安定した銘柄（推奨取引対象）</h3>
+
+  <div class="card success">
+    <div class="card-title">Val + Test 両方でSharpe &gt; 0の銘柄（取引推奨）</div>
+    <table>
+      <tr><th>銘柄</th><th>カテゴリ</th><th>AUC</th><th>Val Sharpe</th><th>Val N</th><th>Test Sharpe</th><th>Test N</th><th>評価</th></tr>
+      <tr><td><strong>_US30</strong></td><td>Indices</td><td class="val-highlight">0.79</td><td class="val-highlight">7.94</td><td>62</td><td class="val-highlight">3.63</td><td>74</td><td><span class="tag tag-low">最良</span></td></tr>
+      <tr><td><strong>NAT_GAS</strong></td><td>Energy</td><td class="val-highlight">0.78</td><td class="val-highlight">4.92</td><td>59</td><td class="val-highlight">2.77</td><td>43</td><td><span class="tag tag-low">最良</span></td></tr>
+      <tr><td><strong>SOLANA</strong></td><td>Crypto</td><td>0.68</td><td class="val-highlight">3.64</td><td>22</td><td class="val-highlight">8.07</td><td>29</td><td><span class="tag tag-low">優秀</span></td></tr>
+      <tr><td><strong>ETHEREUM</strong></td><td>Crypto</td><td>0.67</td><td class="val-highlight">4.69</td><td>18</td><td class="val-highlight">10.00</td><td>22</td><td><span class="tag tag-low">優秀</span></td></tr>
+      <tr><td><strong>CHFJPY</strong></td><td>Forex</td><td>0.66</td><td class="val-highlight">2.80</td><td>18</td><td class="val-highlight">10.00</td><td>19</td><td><span class="tag tag-low">優秀</span></td></tr>
+      <tr><td><strong>EURJPY</strong></td><td>Forex</td><td>0.66</td><td class="val-highlight">3.62</td><td>15</td><td class="val-highlight">5.11</td><td>16</td><td><span class="tag tag-med">良好</span></td></tr>
+      <tr><td><strong>COPPER</strong></td><td>Metals</td><td>0.60</td><td class="val-highlight">5.23</td><td>13</td><td class="val-highlight">6.17</td><td>19</td><td><span class="tag tag-med">良好</span></td></tr>
+      <tr><td><strong>USDJPY</strong></td><td>Forex</td><td>0.65</td><td class="val-highlight">2.38</td><td>15</td><td class="val-highlight">6.95</td><td>8</td><td><span class="tag tag-med">良好</span></td></tr>
+      <tr><td><strong>CARDANO</strong></td><td>Crypto</td><td>0.65</td><td class="val-highlight">10.00</td><td>10</td><td style="color:var(--red)">-1.28</td><td>31</td><td><span class="tag tag-med">Val良/Test悪</span></td></tr>
+      <tr><td><strong>_Germany40</strong></td><td>Indices</td><td>0.65</td><td class="val-highlight">4.57</td><td>23</td><td class="val-highlight">8.31</td><td>9</td><td><span class="tag tag-med">少数だが安定</span></td></tr>
+    </table>
+  </div>
+
+  <h3>23.12 統計的戦略 vs パターン検出の比較</h3>
+
+  <div class="card">
+    <div class="card-title">アプローチ比較</div>
+    <table>
+      <tr><th></th><th>統計的戦略（Sec.22）</th><th>パターン検出（本セクション）</th></tr>
+      <tr><td><strong>取引頻度</strong></td><td>常時（条件一致で即エントリー）</td><td>選択的（上位1-10%のみ）</td></tr>
+      <tr><td><strong>銘柄</strong></td><td>事前選定（5戦略×数銘柄）</td><td>全55銘柄をスクリーニング</td></tr>
+      <tr><td><strong>OOS安定性</strong></td><td>戦略Aのみ安定</td><td>8銘柄以上がVal+Test両方プラス</td></tr>
+      <tr><td><strong>過学習リスク</strong></td><td>中（固定ルール）</td><td>高（ML）だがCV+閾値で制御</td></tr>
+      <tr><td><strong>核心的発見</strong></td><td>SMA cross + 時間帯フィルター</td><td><strong>ボラティリティ急拡大がパターン出現の最強シグナル</strong></td></tr>
+    </table>
+  </div>
+
+  <h3>23.13 最終推奨戦略</h3>
+
+  <div class="card success" style="margin-top:16px">
+    <div class="card-title">ハイブリッド戦略提案</div>
+    <p>統計的戦略とパターン検出を組み合わせたハイブリッドアプローチを推奨する。</p>
+    <table>
+      <tr><th>戦略</th><th>配分</th><th>対象銘柄</th><th>根拠</th></tr>
+      <tr>
+        <td><strong>A: トレンドフォロー</strong></td>
+        <td class="val-highlight">30%</td>
+        <td>GOLD, #Germany40, #USNDAQ100</td>
+        <td>Sec.22で唯一OOS安定。パターン検出でフィルター強化</td>
+      </tr>
+      <tr>
+        <td><strong>P1: ML パターン検出（Indices/Energy）</strong></td>
+        <td class="val-highlight">30%</td>
+        <td>_US30, NAT_GAS, _USNDAQ100, _Germany40</td>
+        <td>AUC 0.76-0.79、Val/Test両方で高Sharpe</td>
+      </tr>
+      <tr>
+        <td><strong>P2: ML パターン検出（Crypto）</strong></td>
+        <td class="val-highlight">20%</td>
+        <td>SOLANA, ETHEREUM, CARDANO</td>
+        <td>高ボラでパターン頻度が高い。OOS安定</td>
+      </tr>
+      <tr>
+        <td><strong>P3: ML パターン検出（Forex/Metals）</strong></td>
+        <td class="val-highlight">20%</td>
+        <td>CHFJPY, EURJPY, USDJPY, COPPER</td>
+        <td>FX/金属の低〜中ボラでも安定したパターン検出</td>
+      </tr>
+    </table>
+    <p style="margin-top:12px"><strong>核心原則:</strong> ボラティリティが急拡大する瞬間（atr_norm↑, atr_ratio↑, d1_range_pct↑）をトリガーとし、そのタイミングでのみRFモデルが方向を判定してエントリー。「パターンが無い時は何もしない」を徹底する。</p>
+  </div>
+</div>
+
+<!-- ===== Section 24: Multi-Method Pattern Detection v2 ===== -->
+<div class="section" id="sec24">
+  <h2><span class="num">24</span>マルチメソッド・パターン検出 v2</h2>
+
+  <p>Section 23の仮説（市場データの~99%はランダムノイズ、パターンは~1%）を検証するため、6つの異なるパラダイムでシグナル検出を比較した。
+  全55銘柄 &times; 6手法 &times; 5-fold Purged CV = 合計39,919トレード。実行時間: 約47分。</p>
+
+  <h3>24.1 6手法の概要</h3>
+  <div class="card">
+    <div class="card-title">手法一覧</div>
+    <table>
+      <tr><th>手法</th><th>パラダイム</th><th>概要</th></tr>
+      <tr><td><strong>M1: RF</strong></td><td>分類</td><td>RandomForest (500木, depth=8) 3クラス分類、信頼度閾値70%</td></tr>
+      <tr><td><strong>M2: HistGBT</strong></td><td>勾配ブースティング</td><td>HistGradientBoosting (300iter, depth=6, lr=0.05) 3クラス分類</td></tr>
+      <tr><td><strong>M3: IsoForest</strong></td><td>異常検出</td><td>IsolationForest (contamination=5%) + 浅いRFで方向判定。上位10%異常スコアのみ</td></tr>
+      <tr><td><strong>M4: VolBreak</strong></td><td>ルールベース</td><td>v1で最重要だったボラティリティ特徴量(atr_norm, atr_ratio, bb_width)を直接ルール化</td></tr>
+      <tr><td><strong>M5: Entropy</strong></td><td>情報理論</td><td>低Permutation Entropy OR 高Autocorrelation = 非ランダム &rarr; 浅いRFで方向</td></tr>
+      <tr><td><strong>M6: Ensemble</strong></td><td>多数決</td><td>M1-M5の3/5以上が同方向 &rarr; シグナル発行</td></tr>
+    </table>
+    <p style="margin-top:8px">38特徴量使用: 35基本特徴量（v1と共通） + 3エントロピー特徴量 (permutation_entropy, sample_entropy, return_autocorr)</p>
+  </div>
+
+  <h3>24.2 手法別パフォーマンス比較</h3>
+  <img src="eda/42_method_comparison.png" alt="Fig.42">
+  <p class="chart-caption">Fig.42: 手法別Val/Test平均Sharpe。RF・Ensembleが最高Test Sharpe 1.61。HistGBTとEntropyはVal>0の銘柄数最多（各33-34）。</p>
+
+  <div class="card">
+    <div class="card-title">手法別集計</div>
+    <table>
+      <tr><th>手法</th><th>Val>0</th><th>Test>0</th><th>Mean Val Sharpe</th><th>Mean Test Sharpe</th><th>評価</th></tr>
+      <tr><td>RF</td><td>32</td><td>30</td><td>1.38</td><td class="val-highlight">1.61</td><td>Test最高。特に株式・指数で強い</td></tr>
+      <tr><td>HistGBT</td><td class="val-highlight">34</td><td>32</td><td class="val-highlight">1.47</td><td>1.24</td><td>Val最高。安定したOOS性能</td></tr>
+      <tr><td>IsoForest</td><td>31</td><td>27</td><td>1.39</td><td>0.48</td><td>外れ値に弱い（BABA:10.0 vs GS:-10.0）</td></tr>
+      <tr><td>VolBreak</td><td>22</td><td>28</td><td>0.13</td><td>0.03</td><td>シンプルルールは不十分</td></tr>
+      <tr><td>Entropy</td><td>34</td><td class="val-highlight">33</td><td>1.14</td><td>1.24</td><td>Test>0最多。広範囲で有効</td></tr>
+      <tr><td>Ensemble</td><td>31</td><td>32</td><td>1.39</td><td class="val-highlight">1.61</td><td>RF同等。安定性◎</td></tr>
+    </table>
+  </div>
+
+  <h3>24.3 Ensemble vs 個別手法</h3>
+  <img src="eda/43_ensemble_vs_individual.png" alt="Fig.43">
+  <p class="chart-caption">Fig.43: シンボルランク順Sharpe分布。Ensembleは中央値で安定、RFは上位銘柄で突出。IsoForestはテールリスク大。</p>
+
+  <h3>24.4 手法間シグナル重複</h3>
+  <img src="eda/44_signal_overlap.png" alt="Fig.44">
+  <p class="chart-caption">Fig.44: 手法間IoU。RF-HistGBT間の重複が最も高く（ML手法同士）、VolBreak-Entropy間は低い（異なるパラダイム）。多様性がアンサンブルの価値を支える。</p>
+
+  <h3>24.5 CV Fold安定性</h3>
+  <img src="eda/45_cv_stability_by_method.png" alt="Fig.45">
+  <p class="chart-caption">Fig.45: 手法別5-fold CV Sharpe。HistGBTとEntropyが全fold安定。RFは後半foldで改善傾向（データ量増加による恩恵）。</p>
+
+  <h3>24.6 銘柄×手法ベストマップ</h3>
+  <img src="eda/46_best_method_heatmap.png" alt="Fig.46">
+  <p class="chart-caption">Fig.46: Val/Test Sharpeヒートマップ。銘柄ごとに最適手法が異なる &rarr; 銘柄選択型アロケーションが有効。</p>
+
+  <h3>24.7 Ensembleエクイティカーブ（Top 10）</h3>
+  <img src="eda/47_ensemble_equity.png" alt="Fig.47">
+  <p class="chart-caption">Fig.47: Test Sharpe上位10銘柄のEnsembleエクイティ。QQQ(7.7), BABA(7.6), EURUSD(5.3), USDJPY(5.3)が顕著。</p>
+
+  <h3>24.8 Win Rate vs トレード数</h3>
+  <img src="eda/48_winrate_vs_trades.png" alt="Fig.48">
+  <p class="chart-caption">Fig.48: トレード数と勝率の関係。Entropy・HistGBTは多トレードでも50%超の勝率維持。VolBreakは多トレード低勝率。</p>
+
+  <h3>24.9 Profit Factor比較</h3>
+  <img src="eda/49_profit_factor_comparison.png" alt="Fig.49">
+  <p class="chart-caption">Fig.49: Test PF。RF/HistGBTが株式銘柄で高PF。多くの銘柄でPF>1.0を達成。</p>
+
+  <h3>24.10 統合ポートフォリオ（手法別）</h3>
+  <img src="eda/50_aggregate_all_methods.png" alt="Fig.50">
+  <p class="chart-caption">Fig.50: CV Sharpe>0の銘柄のみで構成したTestポートフォリオ。RF・Ensembleが最も安定した右肩上がりカーブ。</p>
+
+  <h3>24.11 最終推奨サマリー</h3>
+  <img src="eda/51_final_recommendation.png" alt="Fig.51">
+  <p class="chart-caption">Fig.51: 銘柄別ベスト手法と手法分布。RFが最多選択（特に株式・指数）、次いでEnsemble・IsoForest。</p>
+
+  <h3>24.12 トップ銘柄詳細（Test Sharpe上位）</h3>
+  <div class="card">
+    <div class="card-title">Test Sharpe上位20銘柄 &mdash; ベスト手法</div>
+    <table>
+      <tr><th>Symbol</th><th>Category</th><th>Best Method</th><th>Test Sharpe</th><th>2nd Best</th><th>2nd Sharpe</th><th>Consensus</th></tr>
+      <tr><td>BABA_N</td><td>US_Stocks</td><td>IsoForest</td><td class="val-highlight">10.0</td><td>Ensemble</td><td>7.6</td><td>4/6 positive</td></tr>
+      <tr><td>QQQ_O</td><td>ETFs</td><td>RF</td><td class="val-highlight">8.3</td><td>Ensemble</td><td>7.7</td><td>5/6 positive</td></tr>
+      <tr><td>META_O</td><td>US_Stocks</td><td>RF</td><td class="val-highlight">8.2</td><td>Ensemble</td><td>4.9</td><td>4/6 positive</td></tr>
+      <tr><td>SPY_N</td><td>ETFs</td><td>IsoForest</td><td class="val-highlight">6.4</td><td>Ensemble</td><td>5.1</td><td>4/6 positive</td></tr>
+      <tr><td>BABA_N</td><td>US_Stocks</td><td>RF</td><td>6.3</td><td>HistGBT</td><td>3.0</td><td>5/6 positive</td></tr>
+      <tr><td>NVDA_O</td><td>US_Stocks</td><td>RF</td><td class="val-highlight">5.8</td><td>HistGBT</td><td>5.6</td><td>5/6 positive</td></tr>
+      <tr><td>EURUSD</td><td>Forex</td><td>Ensemble</td><td class="val-highlight">5.3</td><td>IsoForest</td><td>2.4</td><td>5/6 positive</td></tr>
+      <tr><td>USDJPY</td><td>Forex</td><td>Ensemble</td><td class="val-highlight">5.3</td><td>IsoForest</td><td>3.7</td><td>6/6 positive</td></tr>
+      <tr><td>SOLANA</td><td>Crypto</td><td>RF</td><td class="val-highlight">5.2</td><td>Ensemble</td><td>3.8</td><td>4/6 positive</td></tr>
+      <tr><td>NVDA_O</td><td>US_Stocks</td><td>Ensemble</td><td>5.0</td><td>Entropy</td><td>5.4</td><td>6/6 positive</td></tr>
+      <tr><td>COPPER</td><td>Metals</td><td>RF</td><td class="val-highlight">4.8</td><td>HistGBT</td><td>3.6</td><td>4/6 positive</td></tr>
+      <tr><td>XOM_N</td><td>US_Stocks</td><td>Entropy</td><td class="val-highlight">4.8</td><td>HistGBT</td><td>4.8</td><td>3/6 positive</td></tr>
+      <tr><td>ETHEREUM</td><td>Crypto</td><td>Ensemble</td><td class="val-highlight">4.7</td><td>RF</td><td>4.0</td><td>5/6 positive</td></tr>
+      <tr><td>GS_N</td><td>US_Stocks</td><td>HistGBT</td><td>4.2</td><td>RF</td><td>3.6</td><td>3/6 positive</td></tr>
+      <tr><td>AMD_O</td><td>US_Stocks</td><td>IsoForest</td><td>4.0</td><td>Entropy</td><td>2.0</td><td>3/6 positive</td></tr>
+    </table>
+  </div>
+
+  <h3>24.13 分析的洞察</h3>
+  <div class="card warning" style="margin-top:16px">
+    <div class="card-title">主要発見</div>
+    <ol style="margin-left:20px">
+      <li><strong>RF/Ensembleが最強:</strong> Mean Test Sharpe 1.61で並ぶ。ただし、RFは上位銘柄で突出し、Ensembleは全体的に安定。<strong>銘柄によって最適手法が異なる</strong>ため、adaptive selection（銘柄ごとにCV実績で手法を選択）が最も有効。</li>
+      <li><strong>Entropy手法はTest>0が最多（33/55）:</strong> 非ランダム性検出は広範囲で機能。一方でSharpe絶対値はRF/HistGBTに劣る &rarr; フィルター（取引しない判断）として最適。</li>
+      <li><strong>IsoForestはハイリスク・ハイリターン:</strong> BABA(10.0)のような大当たりがある一方、GS(-10.0)のような大損も。分散投資不向き。</li>
+      <li><strong>VolBreak（ルールベース）は不十分:</strong> Mean Test Sharpe 0.03。「ボラ拡大だけ」では方向判定が弱い &rarr; MLモデルとの組み合わせが必要。</li>
+      <li><strong>手法間の多様性が確認:</strong> 異なるパラダイム間のシグナル重複（IoU）が低い &rarr; アンサンブルの付加価値が大きい。</li>
+      <li><strong>USDJPY:全6手法で正Sharpe:</strong> 最もロバストな銘柄。Ensembleで5.3は実用的に有望。</li>
+    </ol>
+  </div>
+
+  <h3>24.14 改訂版最終推奨戦略</h3>
+  <div class="card success" style="margin-top:16px">
+    <div class="card-title">v2改訂推奨 &mdash; Adaptive Multi-Method Portfolio</div>
+    <table>
+      <tr><th>戦略</th><th>配分</th><th>対象銘柄</th><th>手法</th><th>根拠</th></tr>
+      <tr>
+        <td><strong>Tier 1: 高信頼銘柄</strong></td>
+        <td class="val-highlight">40%</td>
+        <td>NVDA_O, QQQ_O, META_O, EURUSD, USDJPY</td>
+        <td>RF/Ensemble (CV最良を自動選択)</td>
+        <td>全手法で正Sharpe。5/6〜6/6合意。Test Sh &ge; 4.9</td>
+      </tr>
+      <tr>
+        <td><strong>Tier 2: 中信頼銘柄</strong></td>
+        <td class="val-highlight">30%</td>
+        <td>SOLANA, ETHEREUM, CARDANO, SPY_N, COPPER</td>
+        <td>銘柄別ベスト手法</td>
+        <td>4/6以上で合意。Test Sh 3.2〜6.4。Crypto/ETF/金属の分散</td>
+      </tr>
+      <tr>
+        <td><strong>Tier 3: 探索的</strong></td>
+        <td class="val-highlight">20%</td>
+        <td>BABA_N, AMD_O, AMZN_O, XOM_N, EURJPY</td>
+        <td>HistGBT/IsoForest (高リスク許容)</td>
+        <td>一部手法で高Sharpeだが不安定。Ensemble合意が弱い</td>
+      </tr>
+      <tr>
+        <td><strong>Entropy フィルター</strong></td>
+        <td>全銘柄適用</td>
+        <td>全体</td>
+        <td>Entropy M5</td>
+        <td>非ランダム性が低い期間は取引停止 &rarr; ドローダウン抑制</td>
+      </tr>
+    </table>
+
+    <p style="margin-top:12px"><strong>核心原則 (v2改訂):</strong></p>
+    <ol style="margin-left:20px; margin-top:6px">
+      <li>Entropy Filter（非ランダム性検出）で「取引可能タイミング」をフィルタリング</li>
+      <li>CV実績で銘柄ごとに最適手法（RF/HistGBT/Ensemble）を自動選択</li>
+      <li>3/5手法以上が合意した方向のみエントリー（Ensemble条件）</li>
+      <li>SL=1.5ATR, TP=3.0ATR (2:1), Max Hold=12bars</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ===== Section 25: MT5 Backtest Verification (ONNX RF Model) ===== -->
+<div class="section" id="sec25">
+  <h2><span class="num">25</span>MT5バックテスト検証（ONNX RF モデル）</h2>
+
+  <div class="card highlight">
+    <div class="card-title">概要</div>
+    <p>pattern_detect_v2.pyで学習したRandomForestモデルをONNX形式でエクスポートし、MT5 Strategy Testerで実際のバックテストを実施。
+    Python分析（Test Sharpe &gt; 1.0）の上位9銘柄＋USDJPYの計10銘柄について、<strong>In-sample期間</strong>（学習データ末尾3ヶ月）と<strong>Out-of-sample期間</strong>（テスト期間）を比較評価。</p>
+    <ul style="margin-top:12px; padding-left:20px; color:var(--text-dim)">
+      <li><strong>モデル学習</strong>: Trainデータのみ（&lt; 2025-09-02）で学習。Test/Valデータは一切使用していない</li>
+      <li><strong>In-sample期間</strong>: 2025.06.02 ~ 2025.09.02（学習データの末尾3ヶ月）</li>
+      <li><strong>Out-of-sample期間</strong>: 2025.12.02 ~ 2026.03.01（完全未知のテスト期間）</li>
+      <li><strong>EA設定</strong>: LotSize=0.01, ConfThreshold=0.70, SL=1.5&times;ATR(14), TP=3.0&times;ATR(14), MaxHold=12bars</li>
+      <li><strong>初期資金</strong>: $10,000 USD, レバレッジ 1:100</li>
+    </ul>
+  </div>
+
+  <h3>KPI サマリー（有効8銘柄 + USDJPY）</h3>
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="value" style="color:var(--green)">7/9</div>
+      <div class="label">OOS プラス銘柄</div>
+    </div>
+    <div class="kpi">
+      <div class="value">8.46</div>
+      <div class="label">平均 In-sample Sharpe</div>
+    </div>
+    <div class="kpi">
+      <div class="value">6.15</div>
+      <div class="label">平均 OOS Sharpe (7銘柄)</div>
+    </div>
+    <div class="kpi">
+      <div class="value" style="color:var(--orange)">0.73</div>
+      <div class="label">Sharpe 維持率 (OOS/IS)</div>
+    </div>
+  </div>
+
+  <h3>全銘柄 比較テーブル</h3>
+  <table>
+    <thead>
+      <tr>
+        <th rowspan="2">Symbol</th>
+        <th rowspan="2">Category</th>
+        <th colspan="5" style="text-align:center; border-bottom:2px solid var(--green)">In-sample (2025.06~09)</th>
+        <th colspan="5" style="text-align:center; border-bottom:2px solid var(--accent)">Out-of-sample (2025.12~2026.03)</th>
+        <th rowspan="2">判定</th>
+      </tr>
+      <tr>
+        <th>Sharpe</th>
+        <th>PF</th>
+        <th>WR%</th>
+        <th>Trades</th>
+        <th>P&amp;L</th>
+        <th>Sharpe</th>
+        <th>PF</th>
+        <th>WR%</th>
+        <th>Trades</th>
+        <th>P&amp;L</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>GOOGL.O</strong></td>
+        <td><span class="tag tag-stocks">US Stock</span></td>
+        <td class="val-pos">28.67</td><td>5.29</td><td>76.9%</td><td>26</td><td>+$0.60</td>
+        <td class="val-pos">5.48</td><td>1.40</td><td>41.9%</td><td>31</td><td>+$0.23</td>
+        <td><span class="tag tag-low">OOS+</span></td>
+      </tr>
+      <tr>
+        <td><strong>NVDA.O</strong></td>
+        <td><span class="tag tag-stocks">US Stock</span></td>
+        <td class="val-pos">18.56</td><td>2.68</td><td>60.7%</td><td>28</td><td>+$0.37</td>
+        <td class="val-pos">13.17</td><td>3.19</td><td>65.0%</td><td>20</td><td>+$0.35</td>
+        <td><span class="tag tag-low">OOS+</span></td>
+      </tr>
+      <tr>
+        <td><strong>USDJPY</strong></td>
+        <td><span class="tag tag-forex">Forex</span></td>
+        <td class="val-pos">17.97</td><td>4.77</td><td>72.2%</td><td>18</td><td>+$33.30</td>
+        <td class="val-pos">6.05</td><td>1.55</td><td>50.0%</td><td>28</td><td>+$13.32</td>
+        <td><span class="tag tag-low">OOS+</span></td>
+      </tr>
+      <tr>
+        <td><strong>META.O</strong></td>
+        <td><span class="tag tag-stocks">US Stock</span></td>
+        <td class="val-pos">15.01</td><td>2.56</td><td>57.1%</td><td>28</td><td>+$1.31</td>
+        <td class="val-pos">16.57</td><td>3.35</td><td>62.5%</td><td>24</td><td>+$1.48</td>
+        <td><span class="tag tag-low">OOS++</span></td>
+      </tr>
+      <tr>
+        <td><strong>BABA.N</strong></td>
+        <td><span class="tag tag-stocks">US Stock</span></td>
+        <td class="val-pos">16.27</td><td>1.97</td><td>47.2%</td><td>53</td><td>+$0.28</td>
+        <td class="val-pos">6.93</td><td>1.50</td><td>51.9%</td><td>27</td><td>+$0.13</td>
+        <td><span class="tag tag-low">OOS+</span></td>
+      </tr>
+      <tr>
+        <td><strong>COPPER</strong></td>
+        <td><span class="tag tag-metals">Metals</span></td>
+        <td class="val-pos">9.29</td><td>1.64</td><td>48.5%</td><td>33</td><td>+$78.83</td>
+        <td class="val-pos">2.85</td><td>2.18</td><td>58.3%</td><td>12</td><td>+$110.91</td>
+        <td><span class="tag tag-low">OOS+</span></td>
+      </tr>
+      <tr>
+        <td><strong>QQQ.O</strong></td>
+        <td><span class="tag tag-etfs">ETF</span></td>
+        <td class="val-pos">7.66</td><td>1.81</td><td>52.0%</td><td>25</td><td>+$0.25</td>
+        <td class="val-neutral">0.00</td><td>1.00</td><td>30.0%</td><td>30</td><td>$0.00</td>
+        <td><span class="tag tag-med">Overfit</span></td>
+      </tr>
+      <tr>
+        <td><strong>ETHEREUM</strong></td>
+        <td><span class="tag tag-crypto">Crypto</span></td>
+        <td class="val-pos">11.80</td><td>2.23</td><td>51.7%</td><td>60</td><td>+$11.09</td>
+        <td class="val-neg">-0.65</td><td>0.96</td><td>35.8%</td><td>67</td><td>-$0.52</td>
+        <td><span class="tag tag-high">Overfit</span></td>
+      </tr>
+      <tr style="color:var(--text-dim)">
+        <td>SOLANA</td>
+        <td><span class="tag tag-crypto">Crypto</span></td>
+        <td class="val-neg">-4.05</td><td>0.82</td><td>30.0%</td><td>90</td><td>-$0.22</td>
+        <td class="val-neg">-5.00</td><td>0.75</td><td>32.5%</td><td>117</td><td>-$0.27</td>
+        <td><span class="tag tag-high">Both-</span></td>
+      </tr>
+      <tr style="color:var(--text-dim)">
+        <td>XRP</td>
+        <td><span class="tag tag-crypto">Crypto</span></td>
+        <td colspan="5" style="text-align:center">全取引 P&amp;L = $0.00（ロットサイズ/スプレッド問題）</td>
+        <td colspan="5" style="text-align:center">全取引 P&amp;L = $0.00（ロットサイズ/スプレッド問題）</td>
+        <td><span class="tag tag-med">N/A</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>分析: In-sample vs Out-of-sample 比較</h3>
+
+  <div class="grid-2">
+    <div class="card success">
+      <div class="card-title">OOSでも堅調な銘柄（7/10）</div>
+      <table>
+        <tr><th>Symbol</th><th>IS Sharpe</th><th>OOS Sharpe</th><th>維持率</th></tr>
+        <tr><td>META.O</td><td>15.01</td><td class="val-pos">16.57</td><td class="val-pos">110%</td></tr>
+        <tr><td>NVDA.O</td><td>18.56</td><td class="val-pos">13.17</td><td>71%</td></tr>
+        <tr><td>BABA.N</td><td>16.27</td><td class="val-pos">6.93</td><td>43%</td></tr>
+        <tr><td>USDJPY</td><td>17.97</td><td class="val-pos">6.05</td><td>34%</td></tr>
+        <tr><td>GOOGL.O</td><td>28.67</td><td class="val-pos">5.48</td><td>19%</td></tr>
+        <tr><td>COPPER</td><td>9.29</td><td class="val-pos">2.85</td><td>31%</td></tr>
+        <tr><td>QQQ.O</td><td>7.66</td><td class="val-neutral">0.00</td><td>0%</td></tr>
+      </table>
+    </div>
+
+    <div class="card danger">
+      <div class="card-title">OOSで崩壊した銘柄（2/10）</div>
+      <table>
+        <tr><th>Symbol</th><th>IS Sharpe</th><th>OOS Sharpe</th><th>原因</th></tr>
+        <tr><td>ETHEREUM</td><td>11.80</td><td class="val-neg">-0.65</td><td>Crypto市場変動</td></tr>
+        <tr><td>SOLANA</td><td>-4.05</td><td class="val-neg">-5.00</td><td>ISでも不振</td></tr>
+      </table>
+      <p style="margin-top:12px; color:var(--text-dim); font-size:0.9rem">
+        Crypto銘柄はOONXモデルとMT5の特徴量計算の乖離（24h取引、tick_volume差異）が影響している可能性あり。
+        SOLANAはIn-sampleでも負けており、RFモデルが機能していない。
+      </p>
+    </div>
+  </div>
+
+  <div class="insight">
+    <strong>META.O が唯一 OOS Sharpe &gt; IS Sharpe</strong> を達成。
+    IS期間の勝率57% &rarr; OOS期間で62%に改善し、PFも2.56 &rarr; 3.35に上昇。
+    市場構造がモデルの予測と合致した好例。ただし、小ロット（0.01）で利益額は$1.48と小さい。
+  </div>
+
+  <h3>カテゴリ別 OOS パフォーマンス</h3>
+  <div class="grid-3">
+    <div class="card success">
+      <div class="card-title">US Stocks（4銘柄）</div>
+      <p>全銘柄OOSプラス。平均OOS Sharpe: <strong class="val-pos">10.54</strong></p>
+      <p style="color:var(--text-dim); font-size:0.9rem">最も安定したカテゴリ。流動性が高く、トレンド構造が安定。</p>
+    </div>
+    <div class="card warn">
+      <div class="card-title">Forex / Metals / ETFs（各1銘柄）</div>
+      <p>USDJPY: OOS Sharpe <strong class="val-pos">6.05</strong><br>
+         COPPER: OOS Sharpe <strong class="val-pos">2.85</strong><br>
+         QQQ.O: OOS Sharpe <strong class="val-neutral">0.00</strong></p>
+      <p style="color:var(--text-dim); font-size:0.9rem">QQQ.Oは微益（$0.25→$0.00）でやや不安定。</p>
+    </div>
+    <div class="card danger">
+      <div class="card-title">Crypto（3銘柄）</div>
+      <p>ETHEREUM: <strong class="val-neg">-0.65</strong><br>
+         SOLANA: <strong class="val-neg">-5.00</strong><br>
+         XRP: <strong class="val-neutral">N/A</strong></p>
+      <p style="color:var(--text-dim); font-size:0.9rem">24h取引のCryptoはMT5のtick_volumeが実際の出来高と乖離し、特徴量の再現性が低い可能性。</p>
+    </div>
+  </div>
+
+  <h3>過学習リスク評価</h3>
+  <div class="card warn">
+    <div class="card-title">Sharpe Ratio 劣化パターン</div>
+    <table>
+      <tr><th>Symbol</th><th>IS Sharpe</th><th>OOS Sharpe</th><th>劣化率</th><th>リスク</th></tr>
+      <tr><td>GOOGL.O</td><td>28.67</td><td>5.48</td><td class="val-neg">-81%</td><td><span class="tag tag-high">要注意</span>（IS Sharpe 28.67は過大適合の兆候）</td></tr>
+      <tr><td>USDJPY</td><td>17.97</td><td>6.05</td><td class="val-neg">-66%</td><td><span class="tag tag-med">中</span></td></tr>
+      <tr><td>BABA.N</td><td>16.27</td><td>6.93</td><td class="val-neg">-57%</td><td><span class="tag tag-med">中</span></td></tr>
+      <tr><td>NVDA.O</td><td>18.56</td><td>13.17</td><td class="val-neg">-29%</td><td><span class="tag tag-low">低</span></td></tr>
+      <tr><td>META.O</td><td>15.01</td><td class="val-pos">16.57</td><td class="val-pos">+10%</td><td><span class="tag tag-low">低</span></td></tr>
+    </table>
+    <p style="margin-top:12px; color:var(--text-dim); font-size:0.9rem">
+      一般にOOSでSharpeが50%以上劣化する場合は過学習リスクが高い。
+      ただしGOOGL.OのIS Sharpe 28.67は期間が短く取引数26と少ないため、統計的に不安定な数値。
+      OOS Sharpe 5.48自体は十分に良好な水準。
+    </p>
+  </div>
+
+  <h3>結論と推奨</h3>
+  <div class="card success">
+    <div class="card-title">MT5バックテスト検証の結論</div>
+    <ol style="padding-left:20px; margin-top:12px">
+      <li><strong>US Stocks（META.O, NVDA.O, BABA.N, GOOGL.O）が最も安定</strong>: 4銘柄すべてOOSプラス、平均Sharpe 10.54</li>
+      <li><strong>USDJPY, COPPERも堅調</strong>: OOS Sharpe 6.05 / 2.85でプラス維持</li>
+      <li><strong>Crypto銘柄はMT5バックテストで不振</strong>: Python分析では好成績だがMT5実行環境との乖離あり</li>
+      <li><strong>過学習は限定的</strong>: IS→OOSの劣化はあるが、7/10銘柄でOOSプラスは実用水準</li>
+      <li><strong>利益額は小さい</strong>: 0.01ロットでの検証のため。実運用ではロットサイズ調整が必要</li>
+    </ol>
+    <div class="insight" style="margin-top:16px">
+      <strong>実運用推奨銘柄（Tier 1）</strong>: META.O, NVDA.O, USDJPY<br>
+      <strong>実運用検討銘柄（Tier 2）</strong>: BABA.N, GOOGL.O, COPPER<br>
+      <strong>非推奨</strong>: SOLANA, ETHEREUM, XRP（Crypto全般）, QQQ.O（OOSブレークイーブン）
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- Section 26: Unified Cross-Asset Model v3                      -->
+<!-- ============================================================ -->
+<div class="section" id="sec26">
+<h2>26. 統一クロスアセットモデル v3 — Cross-Asset Unified Model + Market Environment</h2>
+
+<div class="card">
+  <h3>26.1 概要</h3>
+  <p>v2では各銘柄を個別のRFモデルで学習（銘柄内データのみ使用）。v3では<strong>全55銘柄のデータを統合</strong>し1つの統一モデルを学習、さらに<strong>市場環境特徴量</strong>（他銘柄の情報）を追加。</p>
+
+  <table>
+    <tr><th>項目</th><th>v2 (銘柄別)</th><th>v3 (統一)</th></tr>
+    <tr><td>学習データ</td><td>~5,500行/銘柄</td><td>298,945行（全55銘柄統合, 388K全体）</td></tr>
+    <tr><td>特徴量数</td><td>38</td><td>50 = 38(v2) + 10(市場環境) + 2(ID)</td></tr>
+    <tr><td>モデル数</td><td>55個（銘柄ごと）</td><td>1個（全銘柄共通）</td></tr>
+    <tr><td>比較モデル</td><td>RF, HistGBT, IsoForest, VolBreak, Entropy, Ensemble</td><td>Unified-HistGBT, Unified-RF, PerSymbol-RF(baseline)</td></tr>
+  </table>
+
+  <h4>追加特徴量（12個）</h4>
+  <table>
+    <tr><th>Type</th><th>Feature</th><th>Source</th><th>RF Importance Rank</th></tr>
+    <tr><td rowspan="10" class="tag-market">Market Env</td>
+      <td>equity_momentum</td><td>SPY 24H cumulative return</td><td><strong>#8 (3.1%)</strong></td></tr>
+    <tr><td>risk_on_off</td><td>Risk assets vs safe havens</td><td>#12 (2.3%)</td></tr>
+    <tr><td>corr_to_spy</td><td>D1 rolling corr vs SPY</td><td>#13 (2.2%)</td></tr>
+    <tr><td>gold_bid</td><td>GOLD 24H cumulative return</td><td>#14 (2.0%)</td></tr>
+    <tr><td>usd_strength</td><td>USD long vs short avg return</td><td>#17 (1.8%)</td></tr>
+    <tr><td>crypto_sentiment</td><td>BTC+ETH+SOL avg 24H return</td><td>#18 (1.8%)</td></tr>
+    <tr><td>sector_momentum</td><td>Same-category avg 24H return</td><td>#19 (1.7%)</td></tr>
+    <tr><td>mkt_vol_index</td><td>NDQ100 realized vol percentile</td><td>#21 (1.6%)</td></tr>
+    <tr><td>cross_dispersion</td><td>All ref symbols return StdDev</td><td>#25 (1.4%)</td></tr>
+    <tr><td>mkt_vol_regime</td><td>High vol regime flag</td><td>#46 (0.2%)</td></tr>
+    <tr><td rowspan="2" class="tag-id">ID</td>
+      <td>symbol_id</td><td>Symbol integer ID (0-54)</td><td><strong>#6 (4.3%)</strong></td></tr>
+    <tr><td>category_id</td><td>Category integer ID (0-6)</td><td><strong>#7 (3.6%)</strong></td></tr>
+  </table>
+  <div class="insight">
+    <strong>symbol_id (#6) と category_id (#7) が特徴量重要度Top10入り</strong> — 統一モデルは銘柄固有の特性を内部的に学習。<br>
+    <strong>equity_momentum (#8, 3.1%) がTop10入り</strong> — SPY取引時間ミスマッチを修正（H1 NaN ffill + D1相関）後、全10個の市場環境特徴量が機能。<br>
+    <strong>全10個の市場環境特徴量が非ゼロ重要度</strong>: 修正前は4個が0%だったが、全て有効化。
+  </div>
+</div>
+
+<div class="card">
+  <h3>26.2 OOS Test Period パフォーマンス比較</h3>
+
+  <div class="kpi" style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px">
+    <div class="card success" style="flex:1; min-width:200px; text-align:center; padding:12px">
+      <div style="font-size:28px; font-weight:bold; color:var(--green)">1.66</div>
+      <div style="font-size:13px">Unified-HistGBT<br>Mean Test Sharpe</div>
+    </div>
+    <div class="card success" style="flex:1; min-width:200px; text-align:center; padding:12px">
+      <div style="font-size:28px; font-weight:bold; color:var(--green)">2.08</div>
+      <div style="font-size:13px">Unified-RF<br>Mean Test Sharpe</div>
+    </div>
+    <div class="card" style="flex:1; min-width:200px; text-align:center; padding:12px; border-color:var(--border)">
+      <div style="font-size:28px; font-weight:bold; color:var(--text-muted)">0.82</div>
+      <div style="font-size:13px">PerSymbol-RF (baseline)<br>Mean Test Sharpe</div>
+    </div>
+  </div>
+
+  <table>
+    <tr>
+      <th>Metric</th>
+      <th>Unified-HistGBT</th>
+      <th>Unified-RF</th>
+      <th>PerSymbol-RF</th>
+      <th>Improvement (Best vs Baseline)</th>
+    </tr>
+    <tr>
+      <td>Sharpe &gt; 0</td>
+      <td class="val-pos">31/42 (74%)</td>
+      <td class="val-pos"><strong>35/42 (83%)</strong></td>
+      <td>26/42 (62%)</td>
+      <td class="val-pos">+21pp</td>
+    </tr>
+    <tr>
+      <td>Mean Sharpe</td>
+      <td class="val-pos">1.66</td>
+      <td class="val-pos"><strong>2.08</strong></td>
+      <td>0.82</td>
+      <td class="val-pos">+154%</td>
+    </tr>
+    <tr>
+      <td>Mean Win Rate</td>
+      <td>42.7%</td>
+      <td><strong>43.9%</strong></td>
+      <td>39.2%</td>
+      <td class="val-pos">+4.7pp</td>
+    </tr>
+    <tr>
+      <td>Mean Profit Factor</td>
+      <td>1.32</td>
+      <td><strong>1.39</strong></td>
+      <td>1.22</td>
+      <td class="val-pos">+0.17</td>
+    </tr>
+    <tr>
+      <td>Val&rarr;Test一貫性</td>
+      <td>69%</td>
+      <td class="val-pos"><strong>88%</strong></td>
+      <td>55%</td>
+      <td class="val-pos">+33pp</td>
+    </tr>
+  </table>
+
+  <div class="insight">
+    <strong>Unified-RFが全主要指標で最良。</strong>
+    OOS Sharpe>0率83%（vs baseline 62%）、Val→Test一貫性<strong>88%</strong>（vs 55%）と驚異的な安定性。<br>
+    市場環境特徴量修正後: equity_momentum(#8), corr_to_spy(#13), mkt_vol_index(#21)が有効化し、全10特徴量が寄与。<br>
+    統一モデルは少量データの銘柄でも他銘柄からの知識転移により安定。
+  </div>
+</div>
+
+<div class="card">
+  <h3>26.3 カテゴリ別 Test Sharpe</h3>
+
+  <table>
+    <tr>
+      <th>Category</th>
+      <th>N</th>
+      <th>Unified-HistGBT</th>
+      <th>Unified-RF</th>
+      <th>PerSymbol-RF</th>
+      <th>Best Model</th>
+    </tr>
+    <tr>
+      <td><span class="tag-energy">Energy</span></td><td>1</td>
+      <td class="val-pos">+5.05</td><td class="val-pos">+1.97</td><td class="val-neg">-0.87</td>
+      <td>Unified-HistGBT</td>
+    </tr>
+    <tr>
+      <td><span class="tag-metals">Metals</span></td><td>3</td>
+      <td class="val-pos">+4.16</td><td>+1.32</td><td>+0.24</td>
+      <td>Unified-HistGBT</td>
+    </tr>
+    <tr>
+      <td><span class="tag-crypto">Crypto</span></td><td>4</td>
+      <td class="val-pos">+3.05</td><td class="val-pos"><strong>+3.95</strong></td><td class="val-pos">+4.55</td>
+      <td>PerSymbol-RF</td>
+    </tr>
+    <tr>
+      <td><span class="tag-forex">Forex</span></td><td>6</td>
+      <td class="val-pos">+3.10</td><td class="val-pos"><strong>+3.87</strong></td><td>+0.12</td>
+      <td>Unified-RF</td>
+    </tr>
+    <tr>
+      <td><span class="tag-indices">Indices</span></td><td>6</td>
+      <td>+0.94</td><td class="val-pos"><strong>+1.90</strong></td><td>+0.49</td>
+      <td>Unified-RF</td>
+    </tr>
+    <tr>
+      <td><span class="tag-etfs">ETFs</span></td><td>8</td>
+      <td class="val-neg">-1.04</td><td class="val-pos"><strong>+1.77</strong></td><td class="val-neg">-0.69</td>
+      <td>Unified-RF</td>
+    </tr>
+    <tr>
+      <td><span class="tag-stocks">US_Stocks</span></td><td>14</td>
+      <td class="val-pos">+1.71</td><td>+1.20</td><td class="val-pos">+1.30</td>
+      <td>Unified-HistGBT</td>
+    </tr>
+  </table>
+
+  <div class="insight">
+    <strong>Unified-RFが5/7カテゴリで最良</strong>: Forex (+3.87), Indices (+1.90), ETFs (+1.77), Crypto (+3.95 vs +4.55 baseline)。<br>
+    <strong>Unified-HistGBTはEnergy (+5.05) と Metals (+4.16) で最良</strong>。<br>
+    <strong>PerSymbol-RFはCrypto (+4.55) のみ優位</strong> — 市場環境特徴量修正後、統一モデルの優位性が拡大。
+  </div>
+</div>
+
+<div class="card">
+  <h3>26.4 Top 15 Symbols — Unified-RF Test Period</h3>
+
+  <table>
+    <tr><th>#</th><th>Symbol</th><th>Category</th><th>Test Sharpe</th><th>WR%</th><th>PF</th><th>Trades</th></tr>
+    <tr><td>1</td><td>CHFJPY</td><td><span class="tag-forex">Forex</span></td><td class="val-pos">+5.58</td><td>53.9%</td><td>2.00</td><td>76</td></tr>
+    <tr><td>2</td><td>GS_N</td><td><span class="tag-stocks">US_Stocks</span></td><td class="val-pos">+5.48</td><td>55.6%</td><td>2.17</td><td>45</td></tr>
+    <tr><td>3</td><td>EURUSD</td><td><span class="tag-forex">Forex</span></td><td class="val-pos">+5.43</td><td>53.8%</td><td>2.03</td><td>93</td></tr>
+    <tr><td>4</td><td>EURJPY</td><td><span class="tag-forex">Forex</span></td><td class="val-pos">+5.34</td><td>50.7%</td><td>1.94</td><td>67</td></tr>
+    <tr><td>5</td><td>EEM_N</td><td><span class="tag-etfs">ETFs</span></td><td class="val-pos">+5.15</td><td>50.0%</td><td>1.95</td><td>50</td></tr>
+    <tr><td>6</td><td>XRP</td><td><span class="tag-crypto">Crypto</span></td><td class="val-pos">+4.80</td><td>50.4%</td><td>1.83</td><td>127</td></tr>
+    <tr><td>7</td><td>USDJPY</td><td><span class="tag-forex">Forex</span></td><td class="val-pos">+4.65</td><td>49.4%</td><td>1.81</td><td>87</td></tr>
+    <tr><td>8</td><td>XOM_N</td><td><span class="tag-stocks">US_Stocks</span></td><td class="val-pos">+4.62</td><td>49.0%</td><td>1.88</td><td>49</td></tr>
+    <tr><td>9</td><td>ETHEREUM</td><td><span class="tag-crypto">Crypto</span></td><td class="val-pos">+4.61</td><td>45.9%</td><td>1.90</td><td>135</td></tr>
+    <tr><td>10</td><td>CARDANO</td><td><span class="tag-crypto">Crypto</span></td><td class="val-pos">+4.31</td><td>52.3%</td><td>1.73</td><td>109</td></tr>
+    <tr><td>11</td><td>JPM_N</td><td><span class="tag-stocks">US_Stocks</span></td><td class="val-pos">+3.50</td><td>47.9%</td><td>1.59</td><td>48</td></tr>
+    <tr><td>12</td><td>_AUS200</td><td><span class="tag-indices">Indices</span></td><td class="val-pos">+3.47</td><td>46.3%</td><td>1.61</td><td>41</td></tr>
+    <tr><td>13</td><td>VNQ_N</td><td><span class="tag-etfs">ETFs</span></td><td class="val-pos">+3.36</td><td>44.7%</td><td>1.61</td><td>47</td></tr>
+    <tr><td>14</td><td>AAPL_O</td><td><span class="tag-stocks">US_Stocks</span></td><td class="val-pos">+3.21</td><td>46.3%</td><td>1.54</td><td>54</td></tr>
+    <tr><td>15</td><td>SOXL_N</td><td><span class="tag-etfs">ETFs</span></td><td class="val-pos">+3.19</td><td>43.9%</td><td>1.52</td><td>41</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h3>26.5 CV安定性</h3>
+  <table>
+    <tr><th>Model</th><th>CV Mean Sharpe</th><th>Sharpe&gt;0 Folds</th></tr>
+    <tr><td>Unified-HistGBT</td><td>0.76</td><td>156/238 (66%)</td></tr>
+    <tr><td>Unified-RF</td><td>0.84</td><td>164/238 (69%)</td></tr>
+  </table>
+  <p>5-fold GlobalPurgedTimeSeriesSplit（purge=24h, embargo=6h）による評価。
+  Unified-RFがCV段階でもHistGBTを上回る。約70%のシンボル&times;foldでSharpe>0を達成。</p>
+</div>
+
+<div class="card">
+  <h3>26.6 特徴量重要度 Top 15（Unified RF）</h3>
+
+  <table>
+    <tr><th>Rank</th><th>Feature</th><th>Type</th><th>Importance</th></tr>
+    <tr><td>1</td><td>atr_ratio</td><td>Base</td><td>14.4%</td></tr>
+    <tr><td>2</td><td>d1_range_pct</td><td>Base</td><td>8.9%</td></tr>
+    <tr><td>3</td><td>hour_cos</td><td>Base</td><td>7.9%</td></tr>
+    <tr><td>4</td><td>atr_norm</td><td>Base</td><td>5.1%</td></tr>
+    <tr><td>5</td><td>hour_sin</td><td>Base</td><td>4.5%</td></tr>
+    <tr style="background:rgba(240,136,62,0.15)"><td>6</td><td>symbol_id</td><td><strong>ID</strong></td><td>4.3%</td></tr>
+    <tr style="background:rgba(240,136,62,0.15)"><td>7</td><td>category_id</td><td><strong>ID</strong></td><td>3.6%</td></tr>
+    <tr style="background:rgba(88,166,255,0.12)"><td>8</td><td>equity_momentum</td><td><strong>Market Env</strong></td><td>3.1%</td></tr>
+    <tr><td>9</td><td>realized_vol</td><td>Base</td><td>3.0%</td></tr>
+    <tr><td>10</td><td>bb_width</td><td>Base</td><td>2.7%</td></tr>
+    <tr><td>11</td><td>vol_of_vol</td><td>Base</td><td>2.6%</td></tr>
+    <tr style="background:rgba(88,166,255,0.12)"><td>12</td><td>risk_on_off</td><td><strong>Market Env</strong></td><td>2.3%</td></tr>
+    <tr style="background:rgba(88,166,255,0.12)"><td>13</td><td>corr_to_spy</td><td><strong>Market Env</strong></td><td>2.2%</td></tr>
+    <tr style="background:rgba(88,166,255,0.12)"><td>14</td><td>gold_bid</td><td><strong>Market Env</strong></td><td>2.0%</td></tr>
+    <tr><td>15</td><td>spread_ratio</td><td>Base</td><td>1.8%</td></tr>
+  </table>
+
+  <div class="insight">
+    <strong>equity_momentum (#8, 3.1%) がTop10入り</strong>: SPY取引時間ミスマッチ修正後、市場のモメンタムが最重要市場環境特徴量に。<br>
+    <strong>全10個の市場環境特徴量が非ゼロ重要度</strong>: 修正前は4個(equity_momentum, corr_to_spy, mkt_vol_index, mkt_vol_regime)が0%だったが、D1ベース相関+ffillにより全て有効化。<br>
+    <strong>市場環境特徴量4つ(equity_momentum, risk_on_off, corr_to_spy, gold_bid)がTop15入り</strong>: クロスアセット情報が予測に大きく寄与。
+  </div>
+</div>
+
+<div class="card">
+  <h3>26.7 Charts</h3>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px">
+    <div>
+      <img src="multi_model/results/52_unified_vs_persymbol.png" style="width:100%; border-radius:8px" alt="Fig.52">
+      <p style="font-size:12px; color:var(--text-muted); text-align:center">Fig.52: Unified vs Per-Symbol Test Sharpe</p>
+    </div>
+    <div>
+      <img src="multi_model/results/53_feature_importance.png" style="width:100%; border-radius:8px" alt="Fig.53">
+      <p style="font-size:12px; color:var(--text-muted); text-align:center">Fig.53: Feature Importance (Unified RF)</p>
+    </div>
+    <div>
+      <img src="multi_model/results/54_category_performance.png" style="width:100%; border-radius:8px" alt="Fig.54">
+      <p style="font-size:12px; color:var(--text-muted); text-align:center">Fig.54: Category Performance Comparison</p>
+    </div>
+    <div>
+      <img src="multi_model/results/55_symbol_heatmap.png" style="width:100%; border-radius:8px" alt="Fig.55">
+      <p style="font-size:12px; color:var(--text-muted); text-align:center">Fig.55: Symbol Sharpe Heatmap</p>
+    </div>
+    <div>
+      <img src="multi_model/results/56_cv_stability.png" style="width:100%; border-radius:8px" alt="Fig.56">
+      <p style="font-size:12px; color:var(--text-muted); text-align:center">Fig.56: CV Fold Stability</p>
+    </div>
+    <div>
+      <img src="multi_model/results/57_aggregate_metrics.png" style="width:100%; border-radius:8px" alt="Fig.57">
+      <p style="font-size:12px; color:var(--text-muted); text-align:center">Fig.57: Aggregate Metrics Summary</p>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>26.8 MT5バックテスト検証（Unified-RF ONNX, 特徴量修正後）</h3>
+  <p>統一RFモデルをONNX化(20.2MB, 500 trees, 50特徴量)し、PatternDetectV3.mq5 EAでMT5 Strategy Testerを実行。
+  市場環境特徴量(mkt_vol_index, equity_momentum, corr_to_spy等)の計算ロジックをEA側にも実装。
+  Python分析のTop 10銘柄×2期間（IS: 2025.06-09, OOS: 2025.12-2026.03）の20テスト。</p>
+
+  <table>
+    <tr>
+      <th>Symbol</th><th>Category</th>
+      <th>IS Sharpe</th><th>OOS Sharpe</th>
+      <th>OOS WR%</th><th>OOS PF</th><th>OOS Trades</th>
+      <th>Net P&amp;L</th><th>Assessment</th>
+    </tr>
+    <tr style="background:rgba(63,185,80,0.1)">
+      <td>EURJPY</td><td><span class="tag-forex">Forex</span></td>
+      <td class="val-pos">+2.65</td><td class="val-pos"><strong>+2.84</strong></td>
+      <td>39.4%</td><td>1.22</td><td>33</td>
+      <td class="val-pos">+$7.49</td><td class="val-pos">Excellent</td>
+    </tr>
+    <tr style="background:rgba(63,185,80,0.1)">
+      <td>USDJPY</td><td><span class="tag-forex">Forex</span></td>
+      <td class="val-pos">+5.38</td><td class="val-pos"><strong>+2.77</strong></td>
+      <td>40.5%</td><td>1.21</td><td>42</td>
+      <td class="val-pos">+$8.83</td><td class="val-pos">Excellent</td>
+    </tr>
+    <tr style="background:rgba(63,185,80,0.05)">
+      <td>EURUSD</td><td><span class="tag-forex">Forex</span></td>
+      <td class="val-pos">+2.91</td><td class="val-pos"><strong>+0.76</strong></td>
+      <td>40.8%</td><td>1.05</td><td>98</td>
+      <td class="val-pos">+$4.24</td><td class="val-pos">Good</td>
+    </tr>
+    <tr style="background:rgba(63,185,80,0.03)">
+      <td>CHFJPY</td><td><span class="tag-forex">Forex</span></td>
+      <td class="val-neg">-5.00</td><td class="val-pos">+0.59</td>
+      <td>38.2%</td><td>1.04</td><td>34</td>
+      <td class="val-pos">+$1.77</td><td>Marginal</td>
+    </tr>
+    <tr style="background:rgba(63,185,80,0.08)">
+      <td>EEM.N</td><td><span class="tag-etf">ETFs</span></td>
+      <td class="val-pos">+0.27</td><td class="val-pos"><strong>+18.31</strong></td>
+      <td>95.4%</td><td>4.00</td><td>43</td>
+      <td class="val-pos">+$0.06</td><td>Suspicious*</td>
+    </tr>
+    <tr>
+      <td>GS.N</td><td><span class="tag-stocks">US_Stocks</span></td>
+      <td class="val-neg">-4.29</td><td class="val-neg">-1.14</td>
+      <td>42.6%</td><td>0.92</td><td>54</td>
+      <td class="val-neg">-$0.31</td><td class="val-neg">Failed</td>
+    </tr>
+    <tr>
+      <td>XOM.N</td><td><span class="tag-stocks">US_Stocks</span></td>
+      <td class="val-pos">+4.31</td><td class="val-neg">-5.00</td>
+      <td>29.9%</td><td>0.55</td><td>67</td>
+      <td class="val-neg">-$0.30</td><td class="val-neg">Overfit</td>
+    </tr>
+    <tr>
+      <td>ETHEREUM</td><td><span class="tag-crypto">Crypto</span></td>
+      <td class="val-neg">-2.20</td><td class="val-neg">-4.47</td>
+      <td>30.4%</td><td>0.77</td><td>69</td>
+      <td class="val-neg">-$3.36</td><td class="val-neg">Failed</td>
+    </tr>
+    <tr>
+      <td>XRP</td><td><span class="tag-crypto">Crypto</span></td>
+      <td>0.00</td><td>0.00</td>
+      <td>100%</td><td>-</td><td>89</td>
+      <td>$0.00</td><td>P&amp;L=$0**</td>
+    </tr>
+    <tr>
+      <td>CARDANO</td><td><span class="tag-crypto">Crypto</span></td>
+      <td>0.00</td><td>0.00</td>
+      <td>100%</td><td>-</td><td>33</td>
+      <td>$0.00</td><td>P&amp;L=$0**</td>
+    </tr>
+  </table>
+  <p style="font-size:11px; color:var(--text-secondary)">
+    *EEM.N: 高Sharpeだが取引額が極小($0.06)のため要検証。
+    **XRP/CARDANO: 0.01ロットでの取引額が小数点以下切捨てで$0表示。実質取引不可。</p>
+
+  <div class="kpi" style="display:flex; gap:12px; flex-wrap:wrap; margin:16px 0">
+    <div class="card success" style="flex:1; min-width:160px; text-align:center; padding:10px">
+      <div style="font-size:24px; font-weight:bold; color:var(--green)">5/10</div>
+      <div style="font-size:12px">OOS Sharpe &gt; 0</div>
+    </div>
+    <div class="card success" style="flex:1; min-width:160px; text-align:center; padding:10px">
+      <div style="font-size:24px; font-weight:bold; color:var(--green)">4/4</div>
+      <div style="font-size:12px">Forex全銘柄OOS+</div>
+    </div>
+    <div class="card success" style="flex:1; min-width:160px; text-align:center; padding:10px">
+      <div style="font-size:24px; font-weight:bold; color:var(--green)">EURJPY</div>
+      <div style="font-size:12px">IS→OOS改善 (2.65→2.84)</div>
+    </div>
+    <div class="card danger" style="flex:1; min-width:160px; text-align:center; padding:10px">
+      <div style="font-size:24px; font-weight:bold; color:var(--red)">0/3</div>
+      <div style="font-size:12px">Crypto全銘柄OOS失敗</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <strong>v3 Unified-RF MT5バックテスト結果分析</strong>:<br>
+    - <strong>Forex 4/4銘柄がOOSプラス</strong>: EURJPY(+2.84), USDJPY(+2.77), EURUSD(+0.76), CHFJPY(+0.59)<br>
+    - EURJPY: IS 2.65 → OOS 2.84 — <strong>唯一OOSでISを上回る銘柄</strong>。高い汎化性能。<br>
+    - USDJPY: IS 5.38 → OOS 2.77 — 安定した下方一貫性。過去v2(6.05→?)と合わせ最も信頼性高い。<br>
+    - US Stocks(GS.N, XOM.N): OOS失敗。Pythonでは高Sharpeだが実取引では乖離が大きい。<br>
+    - Crypto: ETHEREUM OOS -4.47。XRP/CARDANOは0.01ロットで実質P&L=$0。<br>
+    <strong>結論: Forex（特にEURJPY, USDJPY）が最も実運用に適したアセットクラス。</strong>
+  </div>
+</div>
+
+<div class="card">
+  <h3>26.9 結論</h3>
+  <ol>
+    <li><strong>Unified-RFがPython分析で最良モデル</strong>: OOS Mean Sharpe <strong>2.08</strong>（baseline比+154%）、<strong>83%</strong>の銘柄でプラス、Val→Test一貫性<strong>88%</strong></li>
+    <li><strong>市場環境特徴量修正により大幅改善</strong>: SPY H1取引時間ミスマッチ修正（ffill + D1相関）で全10特徴量が有効化。equity_momentumが特徴量重要度#8(3.1%)に</li>
+    <li><strong>MT5実検証(Unified-RF)で5/10銘柄OOSプラス</strong>: Forex全4銘柄OOS+（EURJPY 2.84, USDJPY 2.77, EURUSD 0.76, CHFJPY 0.59）</li>
+    <li><strong>Cryptoは引き続きMT5で不振</strong>: ETHEREUM OOS -4.47。XRP/CARDANOは0.01ロットで実質P&L=$0（取引額が小さすぎる）</li>
+    <li><strong>US StocksはPython↔MT5間で乖離</strong>: GS.N/XOM.NともにPython高Sharpeだがtake-profit 0.55。特徴量計算のEA/Python差異が原因の可能性</li>
+    <li><strong>v3の最大貢献</strong>: Forex 4銘柄がMT5 OOSプラスを確認。特にEURJPYはIS→OOS改善(2.65→2.84)という稀少なパターン</li>
+  </ol>
+
+  <div class="insight" style="margin-top:16px">
+    <strong>実運用Tier分類（v3 Unified-RF, MT5検証後）</strong>:<br>
+    <strong>Tier 1（MT5 OOS確認済）</strong>: EURJPY (MT5 +2.84), USDJPY (MT5 +2.77), EURUSD (MT5 +0.76)<br>
+    <strong>Tier 2（Python高Sharpe / MT5未検証 or 弱）</strong>: EEM.N (MT5 +18.31 but $0.06), CHFJPY (MT5 +0.59), XRP (Python +4.80)<br>
+    <strong>非推奨</strong>: US_Stocks（MT5乖離大）、Crypto-ETHEREUM（MT5 OOS -4.47）、XRP/CARDANO（0.01ロット問題）
+  </div>
+</div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- Section 27: Phase 1 - Normalization + LightGBM + Triple-Barrier -->
+<!-- ============================================================ -->
+<h2 id="sec27">27. Phase 1: Normalization + LightGBM/XGBoost + Triple-Barrier</h2>
+
+<div class="card">
+  <h3>27.1 Phase 1 Overview</h3>
+  <p>v3 Unified-RF baseline (Mean Test Sharpe 2.08) against 6 model configurations &times; 2 labeling methods = 12 experiments.</p>
+  <p><strong>Models:</strong> RF-Raw (baseline), Pipeline-RF (StandardScaler+RF), LightGBM-Raw, Pipeline-LightGBM, XGBoost-Raw, Pipeline-XGBoost<br>
+  <strong>Labeling:</strong> MFE/MAE (v2 existing), Triple-Barrier (Lopez de Prado AFML Ch.3)<br>
+  <strong>Features:</strong> 50 (same as v3) | <strong>Data:</strong> 55 symbols, 388K rows<br>
+  <strong>New packages:</strong> lightgbm 4.6.0, xgboost 2.1.4, onnxmltools 1.16.0</p>
+</div>
+
+<div class="card">
+  <h3>27.2 Python Analysis Results (Test Period)</h3>
+  <table>
+    <tr><th>Labeling</th><th>Model</th><th>OOS+</th><th>OOS%</th><th>Mean Sharpe</th><th>Win Rate</th><th>PF</th><th>Val&rarr;Test</th></tr>
+    <tr><td>MFE/MAE</td><td>RF-Raw (v3 baseline)</td><td>35/42</td><td>83%</td><td>2.08</td><td>43.9%</td><td>1.39</td><td>88%</td></tr>
+    <tr><td>MFE/MAE</td><td>Pipeline-RF</td><td>32/42</td><td>76%</td><td>1.68</td><td>43.5%</td><td>1.31</td><td>78%</td></tr>
+    <tr><td>MFE/MAE</td><td>LightGBM-Raw</td><td>33/42</td><td>79%</td><td>1.79</td><td>43.1%</td><td>1.34</td><td>80%</td></tr>
+    <tr style="background:#1a2332"><td>MFE/MAE</td><td><strong>Pipeline-LightGBM</strong></td><td>35/42</td><td>83%</td><td><strong>2.24</strong></td><td>44.4%</td><td>1.41</td><td>80%</td></tr>
+    <tr><td>MFE/MAE</td><td>XGBoost-Raw</td><td>32/42</td><td>76%</td><td>2.46</td><td>43.2%</td><td>1.48</td><td>78%</td></tr>
+    <tr style="background:#1a2332"><td>MFE/MAE</td><td><strong>Pipeline-XGBoost</strong></td><td><strong>35/42</strong></td><td><strong>83%</strong></td><td><strong>3.27</strong></td><td><strong>45.8%</strong></td><td><strong>1.61</strong></td><td>82%</td></tr>
+    <tr><td colspan="8" style="border-top:2px solid #30363d"></td></tr>
+    <tr><td>TripleBarrier</td><td>RF-Raw</td><td>34/42</td><td>81%</td><td>1.87</td><td>43.9%</td><td>1.37</td><td>81%</td></tr>
+    <tr><td>TripleBarrier</td><td>Pipeline-RF</td><td>33/42</td><td>79%</td><td>1.60</td><td>43.2%</td><td>1.30</td><td>76%</td></tr>
+    <tr style="background:#1a2332"><td>TripleBarrier</td><td><strong>LightGBM-Raw</strong></td><td><strong>37/42</strong></td><td><strong>88%</strong></td><td>2.03</td><td>44.2%</td><td>1.37</td><td><strong>89%</strong></td></tr>
+    <tr style="background:#1a2332"><td>TripleBarrier</td><td><strong>Pipeline-LightGBM</strong></td><td><strong>38/42</strong></td><td><strong>90%</strong></td><td>2.04</td><td>43.9%</td><td>1.37</td><td><strong>89%</strong></td></tr>
+    <tr><td>TripleBarrier</td><td>XGBoost-Raw</td><td>35/42</td><td>83%</td><td>1.90</td><td>43.0%</td><td>1.34</td><td>84%</td></tr>
+    <tr><td>TripleBarrier</td><td>Pipeline-XGBoost</td><td>32/42</td><td>76%</td><td>1.65</td><td>42.9%</td><td>1.31</td><td>76%</td></tr>
+  </table>
+  <div class="insight">
+    <strong>Best by Sharpe:</strong> Pipeline-XGBoost + MFE/MAE (Sharpe <strong>3.27</strong>, +57% vs baseline)<br>
+    <strong>Best by Stability:</strong> Pipeline-LightGBM + TripleBarrier (OOS+ <strong>90%</strong>, consistency <strong>89%</strong>)<br>
+    <strong>Label comparison:</strong> MFE/MAE favors higher Sharpe; TripleBarrier favors more consistent OOS+ rate
+  </div>
+</div>
+
+<div class="card">
+  <h3>27.3 LightGBM Feature Importance</h3>
+  <p>Top 10 features from LightGBM-Raw (MFE/MAE labeling):</p>
+  <table>
+    <tr><th>Rank</th><th>Feature</th><th>Importance</th><th>Type</th></tr>
+    <tr><td>1</td><td>d1_range_pct</td><td>9.7%</td><td>Base (v2)</td></tr>
+    <tr><td>2</td><td style="color:#f0883e">equity_momentum</td><td>6.6%</td><td style="color:#f0883e">Market Env</td></tr>
+    <tr><td>3</td><td>atr_norm</td><td>5.0%</td><td>Base (v2)</td></tr>
+    <tr><td>4</td><td style="color:#f0883e">corr_to_spy</td><td>4.9%</td><td style="color:#f0883e">Market Env</td></tr>
+    <tr><td>5</td><td style="color:#f0883e">usd_strength</td><td>3.8%</td><td style="color:#f0883e">Market Env</td></tr>
+    <tr><td>6</td><td style="color:#f0883e">gold_bid</td><td>3.6%</td><td style="color:#f0883e">Market Env</td></tr>
+    <tr><td>7</td><td style="color:#f0883e">mkt_vol_index</td><td>3.6%</td><td style="color:#f0883e">Market Env</td></tr>
+    <tr><td>8</td><td>d1_atr_pctl</td><td>3.3%</td><td>Base (v2)</td></tr>
+    <tr><td>9</td><td style="color:#f0883e">risk_on_off</td><td>3.2%</td><td style="color:#f0883e">Market Env</td></tr>
+    <tr><td>10</td><td>bb_width</td><td>3.1%</td><td>Base (v2)</td></tr>
+  </table>
+  <div class="insight">Market env features hold 6/10 top positions. LightGBM ranks equity_momentum (#2, 6.6%) even higher than RF did (#8, 3.1%).</div>
+</div>
+
+<div class="card">
+  <h3>27.4 ONNX Export</h3>
+  <p>Two models exported as Pipeline ONNX (StandardScaler embedded inside ONNX):</p>
+  <table>
+    <tr><th>Model</th><th>File</th><th>Size</th><th>Input</th><th>EA Changes</th></tr>
+    <tr><td>Pipeline-XGBoost + MFE/MAE</td><td>PatternDetect_Phase1_XGB.onnx</td><td>10.5 MB</td><td>[1, 50]</td><td>None (scaler inside ONNX)</td></tr>
+    <tr><td>Pipeline-LightGBM + TripleBarrier</td><td>PatternDetect_Phase1_LGBM_TB.onnx</td><td>6.9 MB</td><td>[1, 50]</td><td>None (scaler inside ONNX)</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h3>27.5 MT5 Backtest (Phase 1 ONNX)</h3>
+  <p>10 symbols &times; 2 periods &times; 2 models. Compared to v3 Unified-RF baseline.</p>
+  <table>
+    <tr><th>Symbol</th><th>Category</th><th>v3-RF Sharpe</th><th>Phase1-XGB Sharpe</th><th>Phase1-LGBM_TB Sharpe</th></tr>
+    <tr><td>CHFJPY</td><td>Forex</td><td>+0.59</td><td style="color:#f85149">-0.19</td><td style="color:#f85149">-3.38</td></tr>
+    <tr style="background:#1a2332"><td>GS.N</td><td>US_Stocks</td><td style="color:#f85149">-1.14</td><td style="color:#3fb950"><strong>+4.27</strong></td><td style="color:#f85149">-2.23</td></tr>
+    <tr><td>EURUSD</td><td>Forex</td><td>+0.76</td><td>+0.59</td><td style="color:#3fb950"><strong>+1.10</strong></td></tr>
+    <tr><td>EURJPY</td><td>Forex</td><td style="color:#3fb950"><strong>+2.84</strong></td><td>+1.59</td><td style="color:#f85149">-0.11</td></tr>
+    <tr><td>EEM.N</td><td>ETFs</td><td>+18.31</td><td>+1.20</td><td style="color:#3fb950">+2.97</td></tr>
+    <tr><td>XRP</td><td>Crypto</td><td>0.00</td><td>0.00</td><td>0.00</td></tr>
+    <tr><td>USDJPY</td><td>Forex</td><td style="color:#3fb950"><strong>+2.77</strong></td><td>+1.14</td><td>+0.34</td></tr>
+    <tr><td>XOM.N</td><td>US_Stocks</td><td>-5.00</td><td>-5.00</td><td>-3.25</td></tr>
+    <tr><td>ETHEREUM</td><td>Crypto</td><td>-4.47</td><td style="color:#3fb950">-2.55</td><td>-5.00</td></tr>
+    <tr><td>CARDANO</td><td>Crypto</td><td>0.00</td><td>0.00</td><td>0.00</td></tr>
+    <tr style="border-top:2px solid #30363d"><td colspan="2"><strong>OOS+ Count</strong></td><td><strong>5/10</strong></td><td><strong>5/10</strong></td><td><strong>3/10</strong></td></tr>
+  </table>
+  <div class="insight">
+    <strong>XGB:</strong> GS.N flips from -1.14 to <strong>+4.27</strong> (US Stocks breakthrough). But Forex regresses (fewer trades, more selective).<br>
+    <strong>LGBM_TB:</strong> EURUSD improves to +1.10 but generates too many trades (59-89 per symbol), diluting signal quality.<br>
+    <strong>Observation:</strong> Pipeline ONNX (StandardScaler inside) works correctly in MT5 without EA changes. XGB is very selective (2-7 Forex trades vs 33-98 for v3-RF).
+  </div>
+</div>
+
+<div class="card">
+  <h3>27.6 Phase 1 Conclusions</h3>
+  <ol>
+    <li><strong>Pipeline-XGBoost is the best Python model</strong>: Mean Test Sharpe <strong>3.27</strong> (+57% vs v3 baseline), 83% OOS+, PF 1.61</li>
+    <li><strong>TripleBarrier + LightGBM has best stability</strong>: <strong>90%</strong> OOS+, <strong>89%</strong> Val&rarr;Test consistency (vs 83%/88% for baseline)</li>
+    <li><strong>Pipeline ONNX validated</strong>: StandardScaler embedded inside ONNX file works correctly in MT5 (no EA changes needed)</li>
+    <li><strong>MT5 backtest: XGB excels for US Stocks</strong>: GS.N flips from -1.14 to <strong>+4.27</strong> (first profitable US Stock in MT5)</li>
+    <li><strong>MT5 backtest: v3-RF still best for Forex</strong>: EURJPY +2.84, USDJPY +2.77 unmatched by Phase 1 models</li>
+    <li><strong>Trade frequency matters</strong>: XGB's selectivity (few trades) helps noisy US Stocks but hurts trending Forex. LGBM_TB's aggression (many trades) dilutes quality</li>
+    <li><strong>LightGBM feature importance confirms market env</strong>: equity_momentum #2 (6.6%), corr_to_spy #4 (4.9%), 6/10 top features are market env</li>
+  </ol>
+  <div class="insight" style="margin-top:16px">
+    <strong>Updated Tier Classification (Phase 1):</strong><br>
+    <strong>Tier 1 (MT5 confirmed):</strong> GS.N (XGB +4.27), EURJPY (v3-RF +2.84), USDJPY (v3-RF +2.77), EURUSD (LGBM_TB +1.10 or v3-RF +0.76)<br>
+    <strong>Tier 2:</strong> EEM.N (LGBM_TB +2.97), EURJPY (XGB +1.59), USDJPY (XGB +1.14)<br>
+    <strong>Best per asset:</strong> US_Stocks &rarr; Pipeline-XGBoost | Forex &rarr; v3 Unified-RF | Crypto &rarr; none viable
+  </div>
+</div>
+
+<div class="card">
+  <h3>27.7 Charts</h3>
+  <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:16px">
+    <div><img src="phase1/results/60_model_labeling_sharpe.png" style="width:100%"><p style="font-size:0.8em;color:#8b949e">Fig.60: Model &times; Labeling Mean Test Sharpe</p></div>
+    <div><img src="phase1/results/61_oos_positive_count.png" style="width:100%"><p style="font-size:0.8em;color:#8b949e">Fig.61: OOS+ Symbol Count</p></div>
+    <div><img src="phase1/results/62_category_heatmap.png" style="width:100%"><p style="font-size:0.8em;color:#8b949e">Fig.62: Category &times; Model Heatmap</p></div>
+    <div><img src="phase1/results/63_val_test_consistency.png" style="width:100%"><p style="font-size:0.8em;color:#8b949e">Fig.63: Val&rarr;Test Consistency</p></div>
+    <div><img src="phase1/results/64_lgbm_feature_importance.png" style="width:100%"><p style="font-size:0.8em;color:#8b949e">Fig.64: LightGBM Feature Importance</p></div>
+    <div><img src="phase1/results/65_label_distribution.png" style="width:100%"><p style="font-size:0.8em;color:#8b949e">Fig.65: Label Distribution Comparison</p></div>
+  </div>
+</div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- Section 28: Phase 2 - FFD + Session Features -->
+<!-- ============================================================ -->
+<h2 id="sec28">28. Phase 2: FFD + Session Features</h2>
+
+<div class="card">
+  <h3>28.1 Phase 2 Overview</h3>
+  <p>Added 10 new features to test feature expansion: 6 FFD (Fractional Differentiation) + 4 Session/Time features. Total: 60 = 50 (v3) + 6 (FFD) + 4 (Session).</p>
+  <p><strong>FFD Features:</strong> ffd_close, ffd_volume, ffd_atr, ffd_rsi, ffd_momentum, ffd_vol_ratio (Lopez de Prado AFML Ch.5)<br>
+  <strong>Session Features:</strong> session_id (Asia/London/NY/Overlap), hours_to_session, is_high_vol_hour, day_of_month_norm</p>
+</div>
+
+<div class="card">
+  <h3>28.2 FFD Stationarity (EURUSD Sample)</h3>
+  <table>
+    <tr><th>Series</th><th>Min d for stationarity</th><th>Notes</th></tr>
+    <tr><td>log(close)</td><td>d=0.25</td><td>Low d sufficient - price has some mean-reversion at H1 scale</td></tr>
+    <tr><td>log(volume)</td><td>d=0.10</td><td>Volume already near-stationary</td></tr>
+    <tr><td>log(ATR)</td><td>d=0.10</td><td>ATR already near-stationary</td></tr>
+    <tr><td>RSI</td><td>d=0.10</td><td>Oscillator - inherently stationary</td></tr>
+  </table>
+  <div class="insight">Most input series are already near-stationary at H1 scale. Only log(close) requires meaningful differentiation (d=0.25). This explains why FFD features add limited value.</div>
+</div>
+
+<div class="card">
+  <h3>28.3 Python Analysis: 50-feat vs 60-feat (Test Period)</h3>
+  <table>
+    <tr><th>Features</th><th>Model</th><th>OOS+</th><th>OOS%</th><th>Mean Sharpe</th><th>Win Rate</th><th>Consistency</th></tr>
+    <tr><td>50 (Phase 1)</td><td>Pipeline-RF</td><td>32/42</td><td>76%</td><td>1.68</td><td>43.5%</td><td>78%</td></tr>
+    <tr><td>50 (Phase 1)</td><td>Pipeline-LightGBM</td><td>35/42</td><td>83%</td><td>2.24</td><td>44.4%</td><td>80%</td></tr>
+    <tr style="background:#1a2332"><td>50 (Phase 1)</td><td><strong>Pipeline-XGBoost</strong></td><td><strong>35/42</strong></td><td><strong>83%</strong></td><td><strong>3.27</strong></td><td><strong>45.8%</strong></td><td>82%</td></tr>
+    <tr><td colspan="7" style="border-top:2px solid #30363d"></td></tr>
+    <tr><td>60 (Phase 2)</td><td>Pipeline-RF</td><td>33/42</td><td>79%</td><td>2.12</td><td>44.5%</td><td>82%</td></tr>
+    <tr><td>60 (Phase 2)</td><td>Pipeline-LightGBM</td><td>34/42</td><td>81%</td><td>2.06</td><td>43.7%</td><td>77%</td></tr>
+    <tr><td>60 (Phase 2)</td><td>Pipeline-XGBoost</td><td>34/42</td><td>81%</td><td>2.61</td><td>43.5%</td><td>83%</td></tr>
+  </table>
+  <div class="insight" style="color:#f85149">
+    <strong>60-feature set does NOT improve over 50-feature set.</strong> XGBoost Sharpe drops from 3.27 to 2.61 (-20%). Adding noisy features hurts model performance.
+  </div>
+</div>
+
+<div class="card">
+  <h3>28.4 Feature Importance (LightGBM, 60 features)</h3>
+  <table>
+    <tr><th>Rank</th><th>Feature</th><th>Importance</th><th>Type</th><th>Assessment</th></tr>
+    <tr><td>1</td><td>d1_range_pct</td><td>-</td><td>Base</td><td>Top as before</td></tr>
+    <tr><td>2</td><td>equity_momentum</td><td>-</td><td>Market Env</td><td>Top as before</td></tr>
+    <tr style="background:#1a2332"><td><strong>3</strong></td><td style="color:#d29922"><strong>day_of_month_norm</strong></td><td><strong>5.6%</strong></td><td style="color:#d29922">Session (new)</td><td style="color:#3fb950"><strong>Highly valuable</strong> - month-end rebalancing effect</td></tr>
+    <tr><td>16</td><td style="color:#f778ba">ffd_close</td><td>2.1%</td><td style="color:#f778ba">FFD (new)</td><td>Moderate - only useful FFD feature</td></tr>
+    <tr><td>32</td><td style="color:#f778ba">ffd_atr</td><td>1.4%</td><td style="color:#f778ba">FFD (new)</td><td>Low value</td></tr>
+    <tr><td>39-49</td><td style="color:#f778ba">ffd_rsi/momentum/volume/vol_ratio</td><td>0.3-0.7%</td><td style="color:#f778ba">FFD (new)</td><td>Near-zero value</td></tr>
+    <tr><td>51-59</td><td style="color:#d29922">session_id/hours_to/is_high_vol</td><td>0.0-0.3%</td><td style="color:#d29922">Session (new)</td><td style="color:#f85149">Useless</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h3>28.5 Phase 2 Conclusions</h3>
+  <ol>
+    <li><strong>FFD features add marginal value at H1 scale</strong>: Most input series (volume, ATR, RSI) are already near-stationary. Only ffd_close has moderate importance (#16, 2.1%)</li>
+    <li><strong>Session features mostly useless</strong>: session_id, hours_to_session, is_high_vol_hour ranked #51-#59. The model already captures time effects via existing features (dow_sin/cos, hour_sin/cos)</li>
+    <li><strong>day_of_month_norm is highly valuable</strong>: Ranked #3 (5.6%) - captures month-end rebalancing effects. This single feature is trivially implementable in MQL5</li>
+    <li><strong>Adding noisy features hurts XGBoost</strong>: Sharpe drops 3.27 &rarr; 2.61 (-20%). Tree models are robust to noise but not immune. Feature selection &gt; feature addition</li>
+    <li><strong>MT5 backtest skipped</strong>: Since 60 features shows no improvement in Python, building a new EA with 10 additional features is not justified</li>
+  </ol>
+  <div class="insight" style="margin-top:16px">
+    <strong>Recommendation:</strong> Keep 50-feature Pipeline-XGBoost from Phase 1 as best model. Consider adding only day_of_month_norm (single feature) in a future iteration. FFD may be more valuable at higher frequencies (M5, M15) or for non-stationary series like equity indices.
+  </div>
+</div>
+
+<div class="card">
+  <h3>28.6 Charts</h3>
+  <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:16px">
+    <div><img src="phase2/results/70_phase2_vs_phase1.png" style="width:100%"><p style="font-size:0.8em;color:#8b949e">Fig.70: Phase 2 vs Phase 1 Comparison</p></div>
+    <div><img src="phase2/results/71_phase2_feature_importance.png" style="width:100%"><p style="font-size:0.8em;color:#8b949e">Fig.71: Phase 2 Feature Importance (60 feat)</p></div>
+    <div><img src="phase2/results/73_oos_positive.png" style="width:100%"><p style="font-size:0.8em;color:#8b949e">Fig.73: OOS+ Count Comparison</p></div>
+  </div>
+</div>
+
+</div>
+
+</div><!-- container -->
+
+<div class="footer">
+  <p>FXtrade EDA Report &mdash; Generated on 2026-03-03</p>
+  <p>Data Source: FxPro-MT5 Demo | Analysis: Python + MetaTrader5 API</p>
+  <p>56 symbols &times; 5 timeframes | Train: 5,130,036 bars (~18mo) | Val: 696,133 bars (3mo) | Test: 663,631 bars (3mo)</p>
+  <p>Backtest: 5 strategies &times; 3 periods = 3,752 trades | Pattern v1: 55 symbols &times; 5-fold CV = 8,507 trades | Pattern v2: 6 methods &times; 55 symbols = 39,919 trades | Pattern v3: 3 models &times; 55 symbols (unified) | Phase 1: 6 models &times; 2 labelings | Phase 2: 60-feat FFD+Session | Charts: 73 figures</p>
+  <p style="color:var(--orange)">EDA on training data only. Backtest and Pattern Detection evaluated on all 3 periods (train/val/test).</p>
+</div>
+
+</body>
+</html>

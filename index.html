@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FXtrade Phase Evaluation</title>
+<style>
+:root {
+  --bg: #0d1117; --card: #161b22; --border: #30363d;
+  --text: #c9d1d9; --text-dim: #8b949e;
+  --accent: #58a6ff; --green: #3fb950; --red: #f85149;
+  --orange: #d29922; --purple: #bc8cff; --pink: #f778ba;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',-apple-system,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; padding:0; }
+.header { background:linear-gradient(135deg,#1a1e2e 0%,#0d1117 100%); border-bottom:1px solid var(--border); padding:36px 0 24px; text-align:center; }
+.header h1 { font-size:2rem; font-weight:700; background:linear-gradient(90deg,var(--accent),var(--purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:6px; }
+.header .subtitle { color:var(--text-dim); font-size:0.95rem; }
+.header .meta { margin-top:12px; display:flex; justify-content:center; gap:24px; font-size:0.85rem; color:var(--text-dim); flex-wrap:wrap; }
+.header .meta .badge { background:rgba(88,166,255,0.15); color:var(--accent); padding:2px 10px; border-radius:12px; font-size:0.8rem; }
+.container { max-width:1280px; margin:0 auto; padding:0 24px; }
+.nav-bar { background:var(--card); border-bottom:1px solid var(--border); padding:10px 0; position:sticky; top:0; z-index:100; }
+.nav-bar .container { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.nav-link { color:var(--text-dim); text-decoration:none; padding:6px 14px; border-radius:6px; font-size:0.85rem; transition:all 0.2s; }
+.nav-link:hover { background:rgba(88,166,255,0.1); color:var(--accent); }
+.nav-link.active { background:rgba(88,166,255,0.15); color:var(--accent); font-weight:600; }
+.section { margin:36px 0; padding-top:12px; }
+.section h2 { font-size:1.4rem; font-weight:700; color:#e6edf3; padding-bottom:10px; border-bottom:2px solid var(--accent); margin-bottom:20px; }
+.section h3 { font-size:1.1rem; color:var(--purple); margin:24px 0 10px; }
+.card { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:20px; margin:14px 0; }
+.card.highlight { border-left:4px solid var(--accent); }
+.card.success { border-left:4px solid var(--green); }
+.card.warn { border-left:4px solid var(--orange); }
+.card.danger { border-left:4px solid var(--red); }
+table { width:100%; border-collapse:collapse; margin:12px 0; font-size:0.85rem; }
+th, td { padding:8px 12px; text-align:left; border-bottom:1px solid var(--border); }
+th { background:rgba(88,166,255,0.08); color:var(--accent); font-weight:600; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px; }
+tr:hover { background:rgba(255,255,255,0.02); }
+.val-pos { color:var(--green); font-weight:600; }
+.val-neg { color:var(--red); font-weight:600; }
+.val-neutral { color:var(--orange); font-weight:600; }
+.kpi-row { display:flex; gap:14px; flex-wrap:wrap; margin:14px 0; }
+.kpi { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:16px; flex:1; min-width:140px; text-align:center; }
+.kpi .value { font-size:1.6rem; font-weight:800; color:var(--accent); }
+.kpi .label { color:var(--text-dim); font-size:0.8rem; margin-top:2px; }
+.chart-container { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:14px; margin:16px 0; text-align:center; }
+.chart-container img { max-width:100%; height:auto; border-radius:4px; }
+.chart-caption { color:var(--text-dim); font-size:0.8rem; margin-top:6px; font-style:italic; }
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media (max-width:768px) { .grid-2 { grid-template-columns:1fr; } }
+.insight { background:rgba(88,166,255,0.06); border-left:3px solid var(--accent); padding:14px 18px; margin:14px 0; border-radius:0 6px 6px 0; font-size:0.9rem; }
+.insight strong { color:var(--accent); }
+.tag { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:600; margin:1px; }
+.tag-forex { background:rgba(31,119,180,0.2); color:#5dabf5; }
+.tag-metals { background:rgba(255,127,14,0.2); color:#ffb347; }
+.tag-indices { background:rgba(44,160,44,0.2); color:#6dd66d; }
+.tag-energy { background:rgba(214,39,40,0.2); color:#f87171; }
+.tag-crypto { background:rgba(148,103,189,0.2); color:#c4a3ff; }
+.tag-etfs { background:rgba(140,86,75,0.2); color:#c49a8e; }
+.tag-stocks { background:rgba(227,119,194,0.2); color:#f5a0d8; }
+.footer { text-align:center; padding:36px 0; color:var(--text-dim); font-size:0.8rem; border-top:1px solid var(--border); margin-top:48px; }
+p { margin:6px 0; } ul,ol { margin:6px 0 6px 24px; } li { margin:3px 0; } a { color:var(--accent); }
+.repro-box { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:20px; margin:14px 0; }
+.repro-box h4 { color:var(--accent); margin-bottom:10px; }
+.repro-code { background:#0d1117; border:1px solid var(--border); border-radius:6px; padding:14px; margin:8px 0; font-family:'Cascadia Code','Fira Code',monospace; font-size:0.82rem; overflow-x:auto; white-space:pre; color:#e6edf3; line-height:1.5; }
+.repro-step { counter-increment:repro; padding-left:36px; position:relative; margin:12px 0; }
+.repro-step::before { content:counter(repro); position:absolute; left:0; top:0; background:var(--accent); color:#0d1117; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700; }
+.repro-steps { counter-reset:repro; }
+</style>
+</head>
+<body>
+<div class="nav-bar"><div class="container"><a href="index.html" class="nav-link active">Overview</a> <a href="phase_eda.html" class="nav-link">EDA</a> <a href="phase_v1.html" class="nav-link">v1 Per-Symbol RF</a> <a href="phase_v2.html" class="nav-link">v2 Multi-Method</a> <a href="phase_v3.html" class="nav-link">v3 Baseline</a> <a href="phase1.html" class="nav-link">Phase 1</a> <a href="phase2.html" class="nav-link">Phase 2</a> <a href="phase3.html" class="nav-link">Phase 3</a> <a href="report.html" class="nav-link">Full Report</a></div></div>
+<div class="header">
+  <div class="container">
+    <h1>FXtrade Phase Evaluation</h1>
+    <p class="subtitle">Cross-Phase Performance Comparison | 55 Symbols x 7 Asset Classes</p>
+    <div class="meta">
+      <span>Train: <span class="badge">~2025-09-01</span></span>
+      <span>Val: <span class="badge">2025-09-02 ~ 2025-12-01</span></span>
+      <span>Test: <span class="badge">2025-12-02 ~ 2026-03-02</span></span>
+      <span>MT5 IS: <span class="badge">2025-06-02 ~ 2025-09-02</span></span>
+      <span>MT5 Test: <span class="badge">2025-12-02 ~ 2026-03-01</span></span>
+    </div>
+  </div>
+</div>
+<div class="container">
+<div class="section"><h2>Cross-Phase Comparison (Test Period)</h2>
+<table><tr><th>Phase</th><th>Model</th><th>Features</th><th>Labeling</th><th>OOS+</th><th>OOS Rate</th><th>Mean Sharpe</th><th>Mean WR</th><th>Mean PF</th><th></th></tr>
+<tr><td><strong>v1 Per-Symbol RF</strong></td><td>RandomForest (per-symbol)</td><td>35</td><td>MFE/MAE</td><td class="val-pos">21/39</td><td>54%</td><td class="val-pos">0.97</td><td>40.5%</td><td>-</td><td><a href="phase_v1.html">Details</a></td></tr>
+<tr><td><strong>v2 HistGBT</strong></td><td>HistGBT (per-symbol)</td><td>38</td><td>MFE/MAE</td><td class="val-pos">32/42</td><td>76%</td><td class="val-pos">1.24</td><td>42.4%</td><td>1.23</td><td><a href="phase_v2.html">Details</a></td></tr>
+<tr><td><strong>v3 Baseline</strong></td><td>Unified-RF (HistGBT)</td><td>50</td><td>MFE/MAE</td><td class="val-pos">35/42</td><td>83%</td><td class="val-pos">2.08</td><td>43.9%</td><td>1.39</td><td><a href="phase_v3.html">Details</a></td></tr>
+<tr><td><strong>Phase 1 (XGB)</strong></td><td>Pipeline-XGBoost</td><td>50</td><td>MFE/MAE</td><td class="val-pos">35/42</td><td>83%</td><td class="val-pos">3.27</td><td>45.8%</td><td>1.61</td><td><a href="phase1.html">Details</a></td></tr>
+<tr><td><strong>Phase 1 (LGBM-TB)</strong></td><td>Pipeline-LightGBM</td><td>50</td><td>TripleBarrier</td><td class="val-pos">38/42</td><td>90%</td><td class="val-pos">2.04</td><td>43.9%</td><td>1.37</td><td><a href="phase1.html">Details</a></td></tr>
+<tr><td><strong>Phase 2 (60feat)</strong></td><td>Pipeline-XGBoost</td><td>60</td><td>MFE/MAE</td><td class="val-pos">34/42</td><td>81%</td><td class="val-pos">2.61</td><td>43.5%</td><td>1.51</td><td><a href="phase2.html">Details</a></td></tr>
+<tr><td><strong>Phase 3 (Primary)</strong></td><td>Pipeline-XGBoost</td><td>50</td><td>MFE/MAE</td><td class="val-pos">35/42</td><td>83%</td><td class="val-pos">3.27</td><td>45.8%</td><td>1.61</td><td><a href="phase3.html">Details</a></td></tr>
+<tr><td><strong>Phase 3 (Meta-0.6)</strong></td><td>XGB + Meta-LightGBM</td><td>52</td><td>MFE/MAE</td><td class="val-pos">35/42</td><td>83%</td><td class="val-pos">3.39</td><td>45.8%</td><td>1.65</td><td><a href="phase3.html">Details</a></td></tr>
+</table>
+
+<div class="card success">
+  <strong>Best Configuration (Test Sharpe):</strong> Phase 3 Meta-0.6 (Pipeline-XGBoost + Meta-LightGBM filter)<br>
+  Mean Test Sharpe 3.39, 35/42 OOS+, 12.1% signal filtering reduces false positives while preserving true signals.
+</div>
+</div>
+<div class="section"><h2>MT5 Backtest Comparison (Test Period: 2025-12 ~ 2026-03)</h2>
+<table><tr><th>Symbol</th><th>Category</th><th>v3-RF Sharpe</th><th>Phase1-XGB Sharpe</th><th>Phase1-LGBM Sharpe</th><th>v3-RF Trades</th><th>P1-XGB Trades</th><th>P1-LGBM Trades</th></tr>
+<tr><td><strong>CARDANO</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td class="val-neutral">0.00</td><td class="val-neutral">0.00</td><td class="val-neutral">0.00</td><td>33</td><td>4</td><td>43</td></tr>
+<tr><td><strong>CHFJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td class="val-pos">0.59</td><td class="val-neg">-0.19</td><td class="val-neg">-3.38</td><td>34</td><td>7</td><td>59</td></tr>
+<tr><td><strong>EEM.N</strong></td><td><span class="tag tag-etfs">ETFs</span></td><td class="val-pos">18.31</td><td class="val-pos">1.20</td><td class="val-pos">2.97</td><td>43</td><td>27</td><td>56</td></tr>
+<tr><td><strong>ETHEREUM</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td class="val-neg">-4.47</td><td class="val-neg">-2.55</td><td class="val-neg">-5.00</td><td>69</td><td>8</td><td>74</td></tr>
+<tr><td><strong>EURJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td class="val-pos">2.84</td><td class="val-pos">1.59</td><td class="val-neg">-0.11</td><td>33</td><td>5</td><td>71</td></tr>
+<tr><td><strong>EURUSD</strong></td><td><span class="tag tag-forex">Forex</span></td><td class="val-pos">0.76</td><td class="val-pos">0.59</td><td class="val-pos">1.10</td><td>98</td><td>5</td><td>89</td></tr>
+<tr><td><strong>GS.N</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td class="val-neg">-1.14</td><td class="val-pos">4.27</td><td class="val-neg">-2.23</td><td>54</td><td>26</td><td>54</td></tr>
+<tr><td><strong>USDJPY</strong></td><td><span class="tag tag-forex">Forex</span></td><td class="val-pos">2.77</td><td class="val-pos">1.14</td><td class="val-pos">0.34</td><td>42</td><td>3</td><td>64</td></tr>
+<tr><td><strong>XOM.N</strong></td><td><span class="tag tag-stocks">US_Stocks</span></td><td class="val-neg">-5.00</td><td class="val-neg">-5.00</td><td class="val-neg">-3.25</td><td>67</td><td>27</td><td>60</td></tr>
+<tr><td><strong>XRP</strong></td><td><span class="tag tag-crypto">Crypto</span></td><td class="val-neutral">0.00</td><td class="val-neutral">0.00</td><td class="val-neutral">0.00</td><td>89</td><td>9</td><td>79</td></tr>
+</table></div>
+
+<div class="section"><h2>Key Findings</h2>
+<div class="grid-2">
+  <div class="card highlight">
+    <strong>Phase 1: Pipeline-XGBoost + MFE/MAE</strong>
+    <ul>
+      <li>Best Sharpe: 3.27 (83% OOS+)</li>
+      <li>MT5: GS.N flipped -1.14 to +4.27</li>
+      <li>EURJPY Sharpe +1.59 (XGB) vs +2.84 (v3-RF)</li>
+    </ul>
+  </div>
+  <div class="card highlight">
+    <strong>Phase 1: Pipeline-LightGBM + TripleBarrier</strong>
+    <ul>
+      <li>Best stability: 90% OOS+, 89% val-test consistency</li>
+      <li>EURUSD +1.10 in MT5 (vs +0.76 v3-RF)</li>
+      <li>More trades = more stable statistics</li>
+    </ul>
+  </div>
+  <div class="card warn">
+    <strong>Phase 2: FFD + Session Features (60 feat)</strong>
+    <ul>
+      <li>60 features hurt performance vs 50</li>
+      <li>XGB Sharpe dropped 3.27 to 2.61</li>
+      <li>Only day_of_month_norm was valuable (#3, 5.6%)</li>
+    </ul>
+  </div>
+  <div class="card success">
+    <strong>Phase 3: Meta-Labeling</strong>
+    <ul>
+      <li>Meta-0.6: Sharpe 3.39 (+0.12 vs primary)</li>
+      <li>12.1% signal filtering, same OOS+ count</li>
+      <li>primary_confidence ranked #4 in meta model</li>
+    </ul>
+  </div>
+</div>
+</div>
+
+</div>
+<div class="footer">
+  FXtrade ML Trading System - Phase Evaluation Report | Generated 2026-03-03
+</div>
+</body>
+</html>
