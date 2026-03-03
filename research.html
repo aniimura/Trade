@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research: Literature Review & External Sources</title>
+<style>
+:root {
+  --bg: #0d1117; --card: #161b22; --border: #30363d;
+  --text: #c9d1d9; --text-dim: #8b949e;
+  --accent: #58a6ff; --green: #3fb950; --red: #f85149;
+  --orange: #d29922; --purple: #bc8cff; --pink: #f778ba;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',-apple-system,sans-serif; background:var(--bg); color:var(--text); line-height:1.7; padding:0; }
+.header { background:linear-gradient(135deg,#1a1e2e 0%,#0d1117 100%); border-bottom:1px solid var(--border); padding:36px 0 24px; text-align:center; }
+.header h1 { font-size:2rem; font-weight:700; background:linear-gradient(90deg,var(--accent),var(--purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:6px; }
+.header .subtitle { color:var(--text-dim); font-size:0.95rem; }
+.header .meta { margin-top:12px; display:flex; justify-content:center; gap:24px; font-size:0.85rem; color:var(--text-dim); flex-wrap:wrap; }
+.header .meta .badge { background:rgba(88,166,255,0.15); color:var(--accent); padding:2px 10px; border-radius:12px; font-size:0.8rem; }
+.container { max-width:1280px; margin:0 auto; padding:0 24px; }
+.nav-bar { background:var(--card); border-bottom:1px solid var(--border); padding:10px 0; position:sticky; top:0; z-index:100; }
+.nav-bar .container { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.nav-link { color:var(--text-dim); text-decoration:none; padding:6px 14px; border-radius:6px; font-size:0.85rem; transition:all 0.2s; }
+.nav-link:hover { background:rgba(88,166,255,0.1); color:var(--accent); }
+.nav-link.active { background:rgba(88,166,255,0.15); color:var(--accent); font-weight:600; }
+.section { margin:36px 0; padding-top:12px; }
+.section h2 { font-size:1.4rem; font-weight:700; color:#e6edf3; padding-bottom:10px; border-bottom:2px solid var(--accent); margin-bottom:20px; }
+.section h3 { font-size:1.1rem; color:var(--purple); margin:24px 0 10px; }
+.card { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:20px; margin:14px 0; }
+.card.highlight { border-left:4px solid var(--accent); }
+.card.success { border-left:4px solid var(--green); }
+.card.warn { border-left:4px solid var(--orange); }
+.card.danger { border-left:4px solid var(--red); }
+table { width:100%; border-collapse:collapse; margin:12px 0; font-size:0.85rem; }
+th, td { padding:8px 12px; text-align:left; border-bottom:1px solid var(--border); }
+th { background:rgba(88,166,255,0.08); color:var(--accent); font-weight:600; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px; }
+tr:hover { background:rgba(255,255,255,0.02); }
+.val-pos { color:var(--green); font-weight:600; }
+.val-neg { color:var(--red); font-weight:600; }
+.val-neutral { color:var(--orange); font-weight:600; }
+.kpi-row { display:flex; gap:14px; flex-wrap:wrap; margin:14px 0; }
+.kpi { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:16px; flex:1; min-width:140px; text-align:center; }
+.kpi .value { font-size:1.6rem; font-weight:800; color:var(--accent); }
+.kpi .label { color:var(--text-dim); font-size:0.8rem; margin-top:2px; }
+.chart-container { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:14px; margin:16px 0; text-align:center; }
+.chart-container img { max-width:100%; height:auto; border-radius:4px; }
+.chart-caption { color:var(--text-dim); font-size:0.8rem; margin-top:6px; font-style:italic; }
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media (max-width:768px) { .grid-2 { grid-template-columns:1fr; } }
+.insight { background:rgba(88,166,255,0.06); border-left:3px solid var(--accent); padding:14px 18px; margin:14px 0; border-radius:0 6px 6px 0; font-size:0.9rem; }
+.insight strong { color:var(--accent); }
+.tag { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.75rem; font-weight:600; margin:1px; }
+.tag-forex { background:rgba(31,119,180,0.2); color:#5dabf5; }
+.tag-metals { background:rgba(255,127,14,0.2); color:#ffb347; }
+.tag-indices { background:rgba(44,160,44,0.2); color:#6dd66d; }
+.tag-energy { background:rgba(214,39,40,0.2); color:#f87171; }
+.tag-crypto { background:rgba(148,103,189,0.2); color:#c4a3ff; }
+.tag-etfs { background:rgba(140,86,75,0.2); color:#c49a8e; }
+.tag-stocks { background:rgba(227,119,194,0.2); color:#f5a0d8; }
+.footer { text-align:center; padding:36px 0; color:var(--text-dim); font-size:0.8rem; border-top:1px solid var(--border); margin-top:48px; }
+p { margin:6px 0; } ul,ol { margin:6px 0 6px 24px; } li { margin:3px 0; } a { color:var(--accent); }
+.repro-box { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:20px; margin:14px 0; }
+.repro-box h4 { color:var(--accent); margin-bottom:10px; }
+.repro-code { background:#0d1117; border:1px solid var(--border); border-radius:6px; padding:14px; margin:8px 0; font-family:'Cascadia Code','Fira Code',monospace; font-size:0.82rem; overflow-x:auto; white-space:pre; color:#e6edf3; line-height:1.5; }
+.repro-step { counter-increment:repro; padding-left:36px; position:relative; margin:12px 0; }
+.repro-step::before { content:counter(repro); position:absolute; left:0; top:0; background:var(--accent); color:#0d1117; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700; }
+.repro-steps { counter-reset:repro; }
+</style>
+</head>
+<body>
+<div class="nav-bar"><div class="container"><a href="index.html" class="nav-link">Overview</a> <a href="phase_eda.html" class="nav-link">EDA</a> <a href="phase_v1.html" class="nav-link">v1 Per-Symbol RF</a> <a href="phase_v2.html" class="nav-link">v2 Multi-Method</a> <a href="phase_v3.html" class="nav-link">v3 Baseline</a> <a href="phase1.html" class="nav-link">Phase 1</a> <a href="phase2.html" class="nav-link">Phase 2</a> <a href="phase3.html" class="nav-link">Phase 3</a> <a href="research.html" class="nav-link active">Research</a> <a href="report.html" class="nav-link">Full Report</a></div></div>
+<div class="header">
+  <div class="container">
+    <h1>Research: Literature Review & External Sources</h1>
+    <p class="subtitle">MQL5 Articles | Academic Papers | GitHub Frameworks | Benchmarks</p>
+    <div class="meta">
+      <span>Train: <span class="badge">~2025-09-01</span></span>
+      <span>Val: <span class="badge">2025-09-02 ~ 2025-12-01</span></span>
+      <span>Test: <span class="badge">2025-12-02 ~ 2026-03-02</span></span>
+      <span>MT5 IS: <span class="badge">2025-06-02 ~ 2025-09-02</span></span>
+      <span>MT5 Test: <span class="badge">2025-12-02 ~ 2026-03-01</span></span>
+    </div>
+  </div>
+</div>
+<div class="container">
+<div class="section"><h2>Research Overview</h2>
+<div class="card highlight">
+<p>本プロジェクトの3-Phase改善計画は、MQL5.com記事、学術論文、GitHubフレームワークの調査に基づいて設計されました。</p>
+<p>以下はリサーチで収集した知見の体系的なまとめです。</p>
+</div></div>
+<div class="section"><h2>MQL5.com Articles</h2>
+<h3>ONNX Integration</h3>
+<table><tr><th>Article</th><th>Key Content</th></tr>
+<tr><td><strong>How to use ONNX models in MQL5</strong></td><td>CNN-LSTM hybrid (256 filters + 2 LSTM-100), EURUSD H1, R²=0.9684, RMSE=0.00151</td></tr>
+<tr><td><strong>Ensemble ONNX models in MQL5</strong></td><td>Voting classifier: regression (LSTM) + classification (Dense+Softmax), max 256 simultaneous models</td></tr>
+<tr><td><strong>Mastering ONNX: Game-Changer for MQL5</strong></td><td>TF/Keras MLP→ONNX, train accuracy 93%, test ~95%</td></tr>
+<tr><td><strong>Overcoming ONNX Integration Challenges</strong></td><td>3課題: (1) scaler param不一致 → binary file保存, (2) LSTM用3Dテンソルreshape, (3) PCA→89%→52%に劣化. Python/MQL5精度一致: 0.9179</td></tr>
+<tr><td><strong>Data label for time series mining (Part 6)</strong></td><td>PyTorch NBeats→ONNX, OnTimer()300秒推論 + OnTick()注文管理, 非対応ONNX operatorで変換失敗の可能性</td></tr>
+</table>
+<h3>RandomForest & sklearn Pipelines</h3>
+<table><tr><th>Article</th><th>Key Content</th></tr>
+<tr><td><strong>RF with RobustScaler & PolynomialFeatures</strong></td><td>Pipeline: MinMaxScaler→RobustScaler→PolynomialFeatures→RF(20trees, depth20). 100連続終値入力. Pipeline全体を単一ONNX出力可能</td></tr>
+<tr><td><strong>Classification models in Scikit-Learn & ONNX</strong></td><td>28分類アルゴリズムテスト. RF, GBM, AdaBoost, ExtraTrees等21モデルがprob出力対応. 6モデルはONNX変換不可</td></tr>
+<tr><td><strong>Regression models of Scikit-learn & ONNX</strong></td><td>30回帰モデルテスト. RF Regressor→float32のみ(6桁精度 vs double 15桁)</td></tr>
+</table>
+<h3>LightGBM / XGBoost</h3>
+<table><tr><th>Article</th><th>Key Content</th></tr>
+<tr><td><strong>Why LightGBM and XGBoost outperform</strong></td><td>LightGBM: leaf-wise成長, GOSS sampling, スケーリング不要. XGBoost: level-wise成長, quantile sketch. EURUSD H1: LightGBM 69-73%, XGBoost 70%. <strong>73%精度でもバックテストで損失</strong> (精度-収益性ギャップ)</td></tr>
+<tr><td><strong>CatBoost AI Models</strong></td><td>CatBoost統合, カテゴリカル特徴量のネイティブ処理</td></tr>
+</table>
+<h3>Deep Learning (LSTM / Transformer)</h3>
+<table><tr><th>Article</th><th>Key Content</th></tr>
+<tr><td><strong>Trend Prediction with LSTM</strong></td><td>50-unit LSTM + Dense, XAUUSD H1, PF 1.48→1.52, 負けトレードの70%をフィルタ</td></tr>
+<tr><td><strong>PSformer: Parameter-Efficient Transformer</strong></td><td>パラメータ共有 + 時空間分割attention + RevIN正規化. EURUSD H1: WR 66%, 平均利益が平均損失の1.38倍</td></tr>
+<tr><td><strong>Creating Time Series Predictions using LSTM</strong></td><td>日次ローリング正規化: (price - rolling_low) / (rolling_high - rolling_low)</td></tr>
+</table>
+<h3>Data Labeling & ML Blueprint</h3>
+<table><tr><th>Article</th><th>Key Content</th></tr>
+<tr><td><strong>MT5 ML Blueprint (Part 2): Labeling Financial Data</strong></td><td>Triple-Barrier法, Trend-Scanning, <strong>CUSUMフィルタでデータ76.1%削減 + 精度15.2%向上</strong>. 「MLモデル失敗の最大原因はアルゴリズムではなくラベリング」</td></tr>
+<tr><td><strong>ML Blueprint (Part 4): Label Concurrency</strong></td><td>ラベルの時間的重複 (concurrency) 問題 → サンプル重み付けが必要</td></tr>
+</table>
+<h3>Sentiment / News / Calendar</h3>
+<table><tr><th>Article</th><th>Key Content</th></tr>
+<tr><td><strong>Sentiment Analysis and Deep Learning for Trading</strong></td><td>NLTK + TextBlob, VADER, Marketaux API. Polarity -1~+1. ONNX予測+sentiment一致時のみトレード. Sharpe 9.41 (過学習の疑い)</td></tr>
+<tr><td><strong>Neuro-symbolic Systems in Algorithmic Trading</strong></td><td>LSTM(256+128) + シンボリックルール. ML予測70% + パターン信頼度30%の重み付け</td></tr>
+<tr><td><strong>Using MQL5 Economic Calendar for News Filtering</strong></td><td>ネイティブMqlCalendarValue構造体 (外部API不要). 24時間ローリングイベントキャッシュ. ニュース前後のエントリーブロック</td></tr>
+<tr><td><strong>Integrating MQL5 with Data Processing (Part 6)</strong></td><td>12次元正規化市場スナップショット: ATRボラ, RSIモメンタム, スイングH/L距離, トレンド勾配, 出来高比率, ブレイクアウトフラグ, 時間帯パターン</td></tr>
+</table>
+<h3>Feature Engineering Insights (from MQL5 articles)</h3>
+<div class="card highlight">
+<ul>
+<li><strong>最も有効な単一指標:</strong> RSI (方向相関 0.40), MACD histogram (目標相関最高)</li>
+<li><strong>冗長な指標:</strong> Stochastic, CCI, MFI は RSI と >0.70 相関 → 同時使用は避ける</li>
+<li><strong>ATR:</strong> 価格方向とは相関ゼロ → ボラティリティ正規化に使用</li>
+<li><strong>クロスアセット特徴量:</strong> S&P500先物, VIX, WTI原油, 金 → 精度向上に貢献</li>
+</ul></div>
+</div>
+<div class="section"><h2>Academic Papers & Books</h2>
+<h3>Core Reference: Lopez de Prado AFML (2018)</h3>
+<div class="card success">
+<p><strong>Advances in Financial Machine Learning</strong> (Marcos Lopez de Prado) — 本プロジェクトの理論的基盤</p>
+<table><tr><th>Chapter</th><th>Technique</th><th>本プロジェクトでの適用</th></tr>
+<tr><td>Ch.3</td><td>Triple-Barrier Labeling</td><td>Phase 1: TripleBarrier labeling → Pipeline-LightGBM-TB (WR 90% OOS+)</td></tr>
+<tr><td>Ch.3</td><td>Meta-Labeling</td><td>Phase 3: 2-Stage (Primary XGB → Meta LightGBM filter, Sharpe +0.12)</td></tr>
+<tr><td>Ch.5</td><td>Fractional Differentiation (FFD)</td><td>Phase 2: 6 FFD特徴量追加 → <strong>負の結果</strong> (H1では効果なし)</td></tr>
+<tr><td>Ch.7</td><td>Purged K-Fold CV</td><td>全Phase: GlobalPurgedTimeSeriesSplit</td></tr>
+<tr><td>Ch.8</td><td>Clustered Feature Importance</td><td>v3: 50特徴量の重要度分析</td></tr>
+</table></div>
+<h3>Tree-Based Models</h3>
+<table><tr><th>Paper</th><th>Key Findings</th></tr>
+<tr><td><strong>Directional Forecasting for 8 Forex Pairs (2025)</strong></td><td>LR, DT, RF, GBM, AdaBoost, XGBoost, NN. 方向精度55-60%. <strong>単純なモデルがリスク調整リターンで複雑なモデルを上回ることがある</strong>. 収益化にはラウンドトリップコスト &lt;0.4%が必要</td></tr>
+<tr><td><strong>XGBoost in A-shares (2024)</strong></td><td>XGB long-short: 月次リターン2.73%, 年間Sharpe 1.76</td></tr>
+<tr><td><strong>LightGBM and XGBoost for S&P 500 (2024)</strong></td><td>XGBoost: 累積11.31%, 年率20.81%. LightGBM: 10.74%, 19.73%. 組合せが単体・NNを上回る</td></tr>
+<tr><td><strong>GBM & RF for Singapore Market</strong></td><td>GBMとRFがbuy-and-hold超過リターンを生成</td></tr>
+</table>
+<h3>Sentiment / NLP</h3>
+<table><tr><th>Paper</th><th>Key Findings</th></tr>
+<tr><td><strong>FinBERT for Financial Sentiment (2023-2024)</strong></td><td>FinBERT enhanced: Sharpe &gt;1.5 (post-COVID). Long-short FinBERT: Sharpe 2.07. OPT-based LLM: Sharpe 3.05. FinBERT精度72.2%, テクニカルのみ/VADERを6.8-9.5 AUCポイント上回る</td></tr>
+<tr><td><strong>LLMs as News Sentiment Predictor (2025)</strong></td><td>生成型LLMが判別型モデルを上回る. Forward-looking implied sentimentが株式リターン変動の45-50%を捕捉</td></tr>
+<tr><td><strong>News Sentiment and Stock Market Dynamics</strong></td><td>186万件ニュース分析. メディアの悲観論が下落圧力を予測. X(Twitter)集合感情が翌日ダウ予測を改善</td></tr>
+</table>
+<h3>Data Normalization</h3>
+<table><tr><th>Paper</th><th>Key Findings</th></tr>
+<tr><td><strong>BiN: Bilinear Input Normalization (2021)</strong></td><td>金融時系列の双峰分布を処理. 特徴量・時間軸の両方向で整列. 指値注文データの中値予測で大幅改善</td></tr>
+<tr><td><strong>DAIN: Deep Adaptive Input Normalization</strong></td><td>適応的正規化層が入力分布を自動識別. 分布シフト時にパラメータを動的調整</td></tr>
+<tr><td><strong>Feature Engineering for Market Prediction</strong></td><td>金融データは非正規分布 → MLが他ドメインより性能低下. <strong>正規化が改善に不可欠</strong></td></tr>
+</table>
+<h3>Failure Modes & Pitfalls</h3>
+<div class="card danger">
+<ul>
+<li><strong>精度-収益性ギャップ:</strong> 73%方向精度でもライブで損失 (MQL5 article #14926)</li>
+<li><strong>過学習:</strong> ML最大の落とし穴. リテールトレーダーの成功率は~2% (Resonanz Capital)</li>
+<li><strong>非定常性:</strong> 金融時系列のレジームシフト, 自己相関, 分散不均一性 → 従来OOSテストの適用可能性に疑問 (ACM 2022)</li>
+<li><strong>float32精度:</strong> ONNX RF → float32のみ (6桁精度 vs double 15桁)</li>
+<li><strong>取引コスト:</strong> 主要通貨ペアで &lt;0.4%、新興国通貨(&gt;1.0%スプレッド)は不採算</li>
+</ul></div>
+</div>
+<div class="section"><h2>GitHub Frameworks & Repositories</h2>
+<table><tr><th>Repository</th><th>Stars</th><th>Key Details</th></tr>
+<tr><td><strong>Microsoft Qlib</strong></td><td>~36K</td><td>15+モデル (LightGBM, XGBoost, CatBoost, LSTM, Transformer, GATs等). Alpha158/360ベンチマーク. CSZScoreNorm, RobustZScoreNorm処理</td></tr>
+<tr><td><strong>Freqtrade</strong></td><td>~47K</td><td>暗号通貨ボット. FreqAI: LightGBM/XGB/CatBoost/RF/RL. Shift MinMax[-1,1]正規化. 自己適応再学習, walkforward分析</td></tr>
+<tr><td><strong>FinRL</strong></td><td>~14K</td><td>DQN, DDPG, PPO, SAC, A2C, TD3. MACD, RSI(30), ADX, CCI, BB, SMA(30/60). NeurIPS 2020</td></tr>
+<tr><td><strong>Stefan Jansen ML for Trading</strong></td><td>~13K</td><td>書籍コード. 線形モデル→DRL. SEC filing NLP, GAN合成データ, アルファファクター研究</td></tr>
+<tr><td><strong>MlFinLab (Hudson & Thames)</strong></td><td>~4.4K</td><td>Lopez de Pradoフレームワーク. Triple-barrier, meta-labeling, FFD, tick/volume/dollar bars, 構造変化検出</td></tr>
+<tr><td><strong>sklearn-onnx / onnxmltools</strong></td><td>-</td><td>sklearnパイプライン / LightGBM・XGBoost → ONNX変換. 本プロジェクトで使用</td></tr>
+</table></div>
+<div class="section"><h2>Quantitative Benchmarks</h2>
+<h3>Qlib Benchmarks (CSI300, Alpha158)</h3>
+<table><tr><th>Model</th><th>IC</th><th>ICIR</th><th>Annual Return</th><th>Info Ratio</th><th>Max DD</th></tr>
+<tr><td><strong>DoubleEnsemble</strong></td><td>0.0521</td><td>0.4223</td><td>11.58%</td><td>1.3432</td><td>-9.20%</td></tr>
+<tr style="background:#1a2332"><td><strong>LightGBM</strong></td><td>0.0448</td><td>0.3660</td><td>9.01%</td><td>1.0164</td><td>-10.38%</td></tr>
+<tr style="background:#1a2332"><td><strong>XGBoost</strong></td><td>0.0498</td><td>0.3779</td><td>7.80%</td><td>0.9070</td><td>-11.68%</td></tr>
+<tr><td><strong>CatBoost</strong></td><td>0.0481</td><td>0.3366</td><td>7.65%</td><td>0.8032</td><td>-10.92%</td></tr>
+<tr><td><strong>MLP</strong></td><td>0.0376</td><td>0.2846</td><td>8.95%</td><td>1.1408</td><td>-11.03%</td></tr>
+<tr><td><strong>TFT</strong></td><td>0.0358</td><td>0.2160</td><td>8.47%</td><td>0.8131</td><td>-18.24%</td></tr>
+<tr><td><strong>TRA</strong></td><td>0.0440</td><td>0.3535</td><td>7.18%</td><td>1.0835</td><td>-7.60%</td></tr>
+</table>
+<div class="insight"><strong>Insight:</strong> DoubleEnsembleがベスト (IR 1.34). LightGBM/XGBoostはIC・安定性で上位. Transformer系(TFT)はMaxDDが大きい. 本プロジェクトのXGBoost/LightGBM選択はベンチマークと整合.</div>
+<h3>MQL5 Article Performance Reports</h3>
+<table><tr><th>Model</th><th>Context</th><th>Key Metric</th></tr>
+<tr><td><strong>CNN-LSTM</strong></td><td>EURUSD H1</td><td>R²=0.9684, RMSE=0.00151</td></tr>
+<tr><td><strong>MLP (ONNX)</strong></td><td>EURUSD H1</td><td>Test accuracy ~95%</td></tr>
+<tr><td><strong>LSTM</strong></td><td>XAUUSD H1</td><td>PF 1.48→1.52, 70%負けフィルタ</td></tr>
+<tr><td><strong>PSformer</strong></td><td>EURUSD H1</td><td>WR 66%, avg profit/loss ratio 1.38</td></tr>
+<tr><td><strong>RF</strong></td><td>Forex general</td><td>Train 78-83%, <strong>実トレードで損失の可能性</strong></td></tr>
+<tr><td><strong>LightGBM</strong></td><td>EURUSD H1</td><td>69-73%精度, <strong>バックテストで損失</strong></td></tr>
+<tr><td><strong>XGBoost</strong></td><td>EURUSD H1</td><td>70%精度, <strong>バックテストで損失</strong></td></tr>
+</table>
+<div class="card danger"><strong>重要:</strong> MQL5記事の多くは高い精度を報告するが、バックテストでは損失になるケースが多い。方向精度と収益性は別物であり、リスクリワード比・取引コスト・スリッページを考慮したSharpe ratioでの評価が不可欠。</div>
+</div>
+<div class="section"><h2>MT5 Implementation Feasibility</h2>
+<table><tr><th>Feature</th><th>Feasibility</th><th>Difficulty</th><th>Notes</th></tr>
+<tr><td><strong>sklearn Pipeline→単一ONNX</strong></td><td style="color:var(--green)">Feasible</td><td style="color:var(--green)">Low</td><td>Pipeline全体をONNX出力可能. float32/64精度に注意</td></tr>
+<tr><td><strong>LightGBM/XGBoost ONNX</strong></td><td style="color:var(--green)">Feasible</td><td style="color:var(--green)">Low</td><td>本番実績あり. 軽量で高速推論</td></tr>
+<tr><td><strong>複数ONNX (meta-labeling)</strong></td><td style="color:var(--green)">Feasible</td><td style="color:var(--orange)">Medium</td><td>最大256モデル同時ロード可能. 各モデルに独立ハンドル</td></tr>
+<tr><td><strong>FFD (fractional diff) in MQL5</strong></td><td style="color:var(--green)">Feasible</td><td style="color:var(--orange)">Medium</td><td>固定幅ウィンドウで実装可能. O(W)/bar</td></tr>
+<tr><td><strong>Rolling Z-score in MQL5</strong></td><td style="color:var(--green)">Feasible</td><td style="color:var(--green)">Low</td><td>インクリメンタル/Welfordアルゴリズムで実装</td></tr>
+<tr><td><strong>MQL5 Economic Calendar</strong></td><td style="color:var(--green)">Feasible</td><td style="color:var(--orange)">Medium</td><td>ネイティブAPI, 900+マクロ指標, 外部API不要</td></tr>
+<tr><td><strong>FinBERT/LLM sentiment</strong></td><td style="color:var(--orange)">Feasible</td><td style="color:var(--red)">High</td><td>FinBERT ~440MB → MT5内で実行不可. 外部Python→ファイル連携が現実的</td></tr>
+<tr><td><strong>GPU acceleration</strong></td><td style="color:var(--green)">Feasible</td><td style="color:var(--orange)">Medium</td><td>CUDA対応 (最大8 GPU), Build 5572以降</td></tr>
+</table></div>
+<div class="section"><h2>Normalization Methods (Prevalence Ranking)</h2>
+<table><tr><th>#</th><th>Method</th><th>Use Case</th><th>本プロジェクト</th></tr>
+<tr><td>1</td><td><strong>MinMaxScaler (0-1)</strong></td><td>CNN-LSTM, MLP全般</td><td>未使用</td></tr>
+<tr style="background:#1a2332"><td>2</td><td><strong>StandardScaler (Z-score)</strong></td><td>XGBoost/LightGBMパイプライン</td><td>Phase 1-3で採用 (Pipeline-ONNX)</td></tr>
+<tr><td>3</td><td><strong>RobustScaler</strong></td><td>外れ値耐性, RF向き</td><td>未使用 (RFは正規化不要)</td></tr>
+<tr><td>4</td><td><strong>Daily Rolling Normalization</strong></td><td>LSTM系</td><td>未使用</td></tr>
+<tr><td>5</td><td><strong>RevIN</strong></td><td>Transformer系 (PSformer)</td><td>未使用</td></tr>
+<tr><td>6</td><td><strong>Adaptive (BiN/DAIN)</strong></td><td>学術最先端, 分布シフト対応</td><td>未使用 (将来検討)</td></tr>
+</table></div>
+<div class="section"><h2>Model Selection Hierarchy (Literature Consensus)</h2>
+<div class="card highlight">
+<ol>
+<li><strong>Ensemble methods</strong> (DoubleEnsemble) — Qlibベンチマークで最高性能</li>
+<li><strong>Gradient Boosting</strong> (LightGBM, XGBoost) — 安定・高IC・スケーリング不要・軽量ONNX → <strong>本プロジェクトで採用</strong></li>
+<li><strong>LSTM</strong> — DL中で性能/計算効率のベストバランス</li>
+<li><strong>Decoder-only Transformer</strong> — 金融予測でEncoder-onlyを上回る (2025研究)</li>
+<li><strong>Linear Models (LR)</strong> — 単純だがリスク調整リターンで複雑モデルを上回ることも</li>
+</ol></div></div>
+<div class="section"><h2>Key Takeaways (本プロジェクトへの示唆)</h2>
+<div class="grid-2">
+<div class="card success">
+<strong>採用した手法の妥当性</strong>
+<ul>
+<li>XGBoost/LightGBM選択: Qlib IR上位, ONNX実績豊富</li>
+<li>Pipeline-ONNX: スケーラーとモデルを単一ファイル化 → EA変更不要</li>
+<li>Triple-Barrier: Lopez de Pradoの主要手法, CUSUMフィルタとの組合せで更に改善可能</li>
+<li>Meta-Labeling: 方向予測とベットサイジングの分離 → 偽陽性フィルタリング</li>
+<li>クロスアセット特徴量 (v3): 文献でも精度向上に貢献と確認</li>
+</ul></div>
+<div class="card warn">
+<strong>今後の改善候補</strong>
+<ul>
+<li><strong>CUSUMフィルタ:</strong> データ76%削減+精度15%向上 (MQL5 ML Blueprint)</li>
+<li><strong>FinBERT sentiment:</strong> Sharpe 2.07 (L/S), 技術指標のみより6.8-9.5 AUC向上</li>
+<li><strong>Adaptive normalization (DAIN):</strong> 分布シフト時の性能劣化を軽減</li>
+<li><strong>LSTM/Transformer:</strong> PSformer WR 66%, avg P/L 1.38x (但しONNX複雑度増大)</li>
+<li><strong>Sample weighting:</strong> ラベル時間重複 (concurrency) の補正</li>
+<li><strong>Economic Calendar:</strong> ネイティブAPI, ニュース前後のエントリーブロック</li>
+</ul></div>
+</div></div>
+
+</div>
+<div class="footer">
+  FXtrade ML Trading System - Phase Evaluation Report | Generated 2026-03-03
+</div>
+</body>
+</html>
